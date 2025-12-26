@@ -9,6 +9,32 @@ const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerH
 camera.position.set(0, 4.0, 7.5);
 camera.lookAt(0, 0, 0);
 
+// Responsive camera and terrain positioning (continuous scaling)
+let targetCameraY = 4.0;
+let targetCameraZ = 7.5;
+let targetTerrainOffsetY = 0;
+let currentTerrainOffsetY = 0;
+
+function updateCameraTargetForViewport() {
+  const width = window.innerWidth;
+
+  // Define range: 320px (smallest mobile) to 1200px (comfortable desktop)
+  const minWidth = 320;
+  const maxWidth = 1200;
+
+  // Clamp and normalize to 0-1 (0 = small screen, 1 = large screen)
+  const t = Math.max(0, Math.min(1, (width - minWidth) / (maxWidth - minWidth)));
+
+  // Lerp camera position: small screen pulls back, large screen closer
+  targetCameraY = 6.0 + (4.0 - 6.0) * t;   // 6.0 → 4.0
+  targetCameraZ = 13.0 + (7.5 - 13.0) * t; // 13.0 → 7.5
+
+  // Push terrain down on smaller screens to make room for header
+  targetTerrainOffsetY = -1.0 + (0 - (-1.0)) * t;  // -1.0 → 0
+}
+
+updateCameraTargetForViewport();
+
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -563,7 +589,15 @@ function animate() {
   terrainGroup.rotation.x = currentRotation.x;
   terrainGroup.rotation.y = currentRotation.y;
 
-  terrainGroup.position.y = Math.sin(time * 0.4) * 0.06;
+  // Smooth camera position interpolation for responsive sizing
+  camera.position.y += (targetCameraY - camera.position.y) * 0.05;
+  camera.position.z += (targetCameraZ - camera.position.z) * 0.05;
+
+  // Smooth terrain offset interpolation (pushes terrain down on small screens)
+  currentTerrainOffsetY += (targetTerrainOffsetY - currentTerrainOffsetY) * 0.05;
+
+  // Combine gentle float animation with responsive offset
+  terrainGroup.position.y = Math.sin(time * 0.4) * 0.06 + currentTerrainOffsetY;
 
   updateLabelPositions();
   checkPeakHover();
@@ -577,4 +611,5 @@ window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  updateCameraTargetForViewport();
 });
