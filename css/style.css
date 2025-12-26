@@ -1,0 +1,178 @@
+/* Bidnam Lee - Strategic Terrain Website */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-primary: #F8F6F1;
+  --accent: #4A5D4A;
+  --accent-warm: #B8956B;
+  --text-primary: #1A1A1A;
+  --text-secondary: #4A4A4A;
+  --text-muted: #7A7A7A;
+}
+
+body {
+  font-family: 'SF Pro Text', system-ui, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow: hidden;
+  cursor: grab;
+}
+
+body.dragging {
+  cursor: grabbing;
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+}
+
+/* Paper texture overlay */
+.container::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 100;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* Left-aligned header */
+.header {
+  position: absolute;
+  top: 10%;
+  left: 5%;
+  z-index: 10;
+  pointer-events: none;
+  max-width: 320px;
+}
+
+.name {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.headline {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--text-primary);
+}
+
+.headline em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+#canvas-container {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+canvas {
+  display: block;
+}
+
+#lines-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.peak-line {
+  stroke: var(--text-muted);
+  stroke-width: 1;
+  stroke-dasharray: 2, 3;
+  fill: none;
+  opacity: 0.5;
+  transition: opacity 0.3s ease, stroke 0.3s ease;
+}
+
+.peak-line.active {
+  stroke: var(--accent-warm);
+  opacity: 1;
+  stroke-width: 1.5;
+}
+
+.nav-labels {
+  position: absolute;
+  bottom: 4%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2rem;
+  z-index: 10;
+}
+
+.nav-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.4rem 0.75rem;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+}
+
+.nav-label:hover,
+.nav-label.active {
+  color: var(--accent);
+  background: rgba(44, 62, 80, 0.06);
+}
+
+.peak-label {
+  position: absolute;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--text-primary);
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+  z-index: 20;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  text-shadow:
+    0 1px 3px rgba(248, 246, 241, 0.9),
+    0 0 8px rgba(248, 246, 241, 0.8),
+    0 0 16px rgba(248, 246, 241, 0.6);
+}
+
+.peak-label.active {
+  color: var(--accent-warm);
+  font-size: 1.3rem;
+  text-shadow:
+    0 1px 3px rgba(248, 246, 241, 1),
+    0 0 12px rgba(248, 246, 241, 0.9),
+    0 0 20px rgba(248, 246, 241, 0.7);
+}
+
+.hint {
+  position: absolute;
+  bottom: 1%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  z-index: 10;
+  opacity: 0.6;
+}
