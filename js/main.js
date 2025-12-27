@@ -613,3 +613,26 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   updateCameraTargetForViewport();
 });
+
+// Info panel toggle
+const infoPanel = document.querySelector('.info-panel');
+const infoPanelTab = document.querySelector('.info-panel-tab');
+const infoPanelClose = document.querySelector('.info-panel-close');
+
+infoPanelTab.addEventListener('click', (e) => {
+  e.stopPropagation();
+  infoPanel.classList.toggle('open');
+});
+
+infoPanelClose.addEventListener('click', (e) => {
+  e.stopPropagation();
+  infoPanel.classList.remove('open');
+});
+
+// Close when clicking outside
+document.addEventListener('click', (e) => {
+  if (infoPanel.classList.contains('open') &&
+      !infoPanel.contains(e.target)) {
+    infoPanel.classList.remove('open');
+  }
+});
