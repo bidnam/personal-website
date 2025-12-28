@@ -589,7 +589,7 @@ function onPeakClick(e) {
 document.addEventListener('click', onPeakClick);
 
 let time = 0;
-const autoRotateSpeed = 0.0006;
+const autoRotateSpeed = -0.0006;
 const idleThreshold = 3000;
 
 function animate() {
