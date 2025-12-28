@@ -4,8 +4,8 @@ if (canvas) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xF8F6F1);
 
-  const camera = new THREE.PerspectiveCamera(45, 80/50, 0.1, 100);
-  camera.position.set(0, 2.5, 4);
+  const camera = new THREE.PerspectiveCamera(50, 80/50, 0.1, 100);
+  camera.position.set(0, 2.2, 3.2);  // Closer to fill frame
   camera.lookAt(0, 0, 0);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
