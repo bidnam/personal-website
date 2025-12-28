@@ -4,12 +4,12 @@ if (canvas) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xF8F6F1);
 
-  const camera = new THREE.PerspectiveCamera(45, 60/40, 0.1, 100);
+  const camera = new THREE.PerspectiveCamera(45, 80/50, 0.1, 100);
   camera.position.set(0, 2.5, 4);
   camera.lookAt(0, 0, 0);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.setSize(60, 40);
+  renderer.setSize(80, 50);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   // Simplified terrain geometry (fewer segments)
@@ -35,10 +35,48 @@ if (canvas) {
   }
   geometry.computeVertexNormals();
 
-  // Simple green material with flat shading
-  const material = new THREE.MeshLambertMaterial({
-    color: 0x4A5D4A,
-    flatShading: true
+  // Gradient shader material matching main terrain
+  const material = new THREE.ShaderMaterial({
+    uniforms: {
+      uColorLow: { value: new THREE.Color(0x8FBC8F) },
+      uColorMid: { value: new THREE.Color(0x5A9E5A) },
+      uColorHigh: { value: new THREE.Color(0x1A4D2E) },
+      uMinHeight: { value: 0 },
+      uMaxHeight: { value: 0.8 }
+    },
+    vertexShader: `
+      varying float vHeight;
+      varying vec3 vNormal;
+      void main() {
+        vHeight = position.y;
+        vNormal = normalize(normalMatrix * normal);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColorLow;
+      uniform vec3 uColorMid;
+      uniform vec3 uColorHigh;
+      uniform float uMinHeight;
+      uniform float uMaxHeight;
+      varying float vHeight;
+      varying vec3 vNormal;
+      void main() {
+        float t = smoothstep(uMinHeight, uMaxHeight, vHeight);
+        vec3 color;
+        if (t < 0.5) {
+          color = mix(uColorLow, uColorMid, t * 2.0);
+        } else {
+          color = mix(uColorMid, uColorHigh, (t - 0.5) * 2.0);
+        }
+        // Simple lighting
+        vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
+        float diffuse = max(dot(vNormal, lightDir), 0.0);
+        float lighting = 0.55 + diffuse * 0.45;
+        gl_FragColor = vec4(color * lighting, 1.0);
+      }
+    `,
+    side: THREE.DoubleSide
   });
 
   const terrain = new THREE.Mesh(geometry, material);
