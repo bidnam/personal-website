@@ -64,7 +64,7 @@ body.dragging {
 
 .name {
   font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 400;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -406,7 +406,7 @@ canvas {
 body.page {
   background: var(--bg-primary);
   min-height: 100vh;
-  padding: 80px 4rem 2rem;  /* Top padding for fixed header */
+  padding: 90px 4rem 2rem;  /* Top padding for fixed header */
   cursor: default;
   overflow: auto;
   animation: fadeFromGreen 0.4s ease;
@@ -492,7 +492,7 @@ body.page {
 
 @media (max-width: 480px) {
   body.page {
-    padding: 70px 1.5rem 1.5rem;
+    padding: 80px 1.5rem 1.5rem;
   }
 
   .page-nav {
@@ -514,7 +514,7 @@ body.page {
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -525,7 +525,7 @@ body.page {
 
 .inner-name {
   font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 0.85rem;
+  font-size: 1rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -572,76 +572,45 @@ body.page {
   background: var(--accent);
 }
 
-/* Navigation Drawer */
-.drawer {
-  position: fixed;
-  top: 0;
-  right: -300px;
-  width: 300px;
-  height: 100vh;
-  background: var(--bg-primary);
-  padding: 3rem 2rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  transition: right 0.3s ease;
-  z-index: 102;  /* Above overlay */
-  border-left: 1px solid var(--text-muted);
-}
-
-.drawer.open {
-  right: 0;
-}
-
-.drawer-link {
-  display: block;
+/* Menu Wrapper for positioning */
+.menu-wrapper {
   position: relative;
-  overflow: hidden;
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 1.5rem;
-  color: var(--text-secondary);
-  text-decoration: none;
-  height: 2.5rem;
-  line-height: 2.5rem;
 }
 
-.drawer-link span {
-  display: block;
-  transition: transform 0.3s ease;
-}
-
-.drawer-link::after {
-  content: attr(data-text);
+/* Navigation Panel */
+.nav-panel {
   position: absolute;
-  top: 100%;
-  left: 0;
-  color: var(--accent);
-  transition: transform 0.3s ease;
-}
-
-.drawer-link:hover span {
-  transform: translateY(-100%);
-}
-
-.drawer-link:hover::after {
-  transform: translateY(-100%);
-}
-
-.drawer-link.active {
-  color: var(--accent);
-}
-
-.drawer-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+  top: calc(100% + 10px);
+  right: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--text-muted);
+  border-radius: 4px;
+  padding: 0.75rem 1.25rem;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
-  z-index: 101;  /* Above header (100) */
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 101;
 }
 
-.drawer-overlay.active {
+.nav-panel.open {
   opacity: 1;
   pointer-events: auto;
+  transform: translateY(0);
+}
+
+.nav-panel-link {
+  display: block;
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  padding: 0.5rem 0;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.nav-panel-link:hover,
+.nav-panel-link.active {
+  color: var(--accent);
 }

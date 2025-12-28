@@ -97,17 +97,18 @@ if (canvas) {
   animate();
 }
 
-// Drawer toggle
+// Nav panel toggle
 const menuToggle = document.querySelector('.menu-toggle');
-const drawer = document.querySelector('.drawer');
-const overlay = document.querySelector('.drawer-overlay');
+const navPanel = document.querySelector('.nav-panel');
 
-menuToggle?.addEventListener('click', () => {
-  drawer.classList.toggle('open');
-  overlay.classList.toggle('active');
+menuToggle?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  navPanel.classList.toggle('open');
 });
 
-overlay?.addEventListener('click', () => {
-  drawer.classList.remove('open');
-  overlay.classList.remove('active');
+// Close panel when clicking outside
+document.addEventListener('click', (e) => {
+  if (navPanel?.classList.contains('open') && !navPanel.contains(e.target)) {
+    navPanel.classList.remove('open');
+  }
 });
