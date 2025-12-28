@@ -45,14 +45,9 @@ body.dragging {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
-/* Headline emerge animation */
-@keyframes emergeUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
+/* Clip reveal animation */
+@keyframes clipReveal {
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }
@@ -65,8 +60,6 @@ body.dragging {
   z-index: 10;
   pointer-events: none;
   max-width: 320px;
-  opacity: 0;
-  animation: emergeUp 1s ease-out 0.2s forwards;
 }
 
 .name {
@@ -77,6 +70,7 @@ body.dragging {
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 0.75rem;
+  overflow: hidden;
 }
 
 .headline {
@@ -85,6 +79,21 @@ body.dragging {
   font-weight: 400;
   line-height: 1.35;
   color: var(--text-primary);
+  overflow: hidden;
+}
+
+.reveal-text {
+  display: block;
+  transform: translateY(100%);
+  animation: clipReveal 0.8s ease-out forwards;
+}
+
+.name .reveal-text {
+  animation-delay: 0.2s;
+}
+
+.headline .reveal-text {
+  animation-delay: 0.4s;
 }
 
 .headline em {
