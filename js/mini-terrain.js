@@ -4,12 +4,12 @@ if (canvas) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xF8F6F1);
 
-  const camera = new THREE.PerspectiveCamera(50, 80/50, 0.1, 100);
-  camera.position.set(0, 2.8, 3.8);  // Pull back to show full rotation
+  const camera = new THREE.PerspectiveCamera(50, 100/65, 0.1, 100);
+  camera.position.set(0, 3.2, 4.5);  // Pull back to show full rotation
   camera.lookAt(0, 0, 0);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.setSize(80, 50);
+  renderer.setSize(100, 65);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
   // Simplified terrain geometry (fewer segments)
@@ -91,7 +91,7 @@ if (canvas) {
   // Auto-rotate animation
   function animate() {
     requestAnimationFrame(animate);
-    terrain.rotation.y -= 0.008;  // Clockwise
+    terrain.rotation.y -= 0.003;  // Slow clockwise rotation
     renderer.render(scene, camera);
   }
   animate();
