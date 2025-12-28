@@ -199,7 +199,7 @@ canvas {
 
 .hint {
   position: absolute;
-  bottom: 1%;
+  bottom: 3rem;
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.65rem;
