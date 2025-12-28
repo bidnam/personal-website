@@ -100,8 +100,12 @@ canvas {
   stroke-width: 1;
   stroke-dasharray: 2, 3;
   fill: none;
+  opacity: 0;
+  transition: opacity 0.5s ease, stroke 0.3s ease;
+}
+
+.peak-line.visible {
   opacity: 0.5;
-  transition: opacity 0.3s ease, stroke 0.3s ease;
 }
 
 .peak-line.active {
@@ -146,7 +150,7 @@ canvas {
   font-style: italic;
   color: var(--text-primary);
   pointer-events: none;
-  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.5s ease;
   z-index: 20;
   white-space: nowrap;
   transform: translateX(-50%);
@@ -154,6 +158,11 @@ canvas {
     0 1px 3px rgba(248, 246, 241, 0.9),
     0 0 8px rgba(248, 246, 241, 0.8),
     0 0 16px rgba(248, 246, 241, 0.6);
+  opacity: 0;
+}
+
+.peak-label.visible {
+  opacity: 1;
 }
 
 .peak-label.active {
@@ -352,5 +361,126 @@ canvas {
   .info-panel-content {
     width: 260px;
     padding: 1.5rem;
+  }
+}
+
+/* Page Transition Overlay */
+.page-transition-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1000;
+  transition: opacity 0.4s ease;
+}
+
+.page-transition-overlay.active {
+  opacity: 1;
+}
+
+/* Inner Page Styles */
+body.page {
+  background: var(--bg-primary);
+  min-height: 100vh;
+  padding: 2rem 4rem;
+  cursor: default;
+  overflow: auto;
+  animation: fadeFromGreen 0.4s ease;
+}
+
+@keyframes fadeFromGreen {
+  from {
+    background: var(--accent);
+    opacity: 0.8;
+  }
+  to {
+    background: var(--bg-primary);
+    opacity: 1;
+  }
+}
+
+.page-nav {
+  max-width: 640px;
+  margin: 0 auto 4rem;
+}
+
+.back-link {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: var(--accent);
+}
+
+.page-content {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.contour-mark {
+  width: 32px;
+  height: 20px;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.contour-mark svg {
+  width: 100%;
+  height: 100%;
+}
+
+.page-content h1 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.lede {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.2rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--accent);
+  margin: 0 0 2.5rem;
+}
+
+.about-text p {
+  font-family: 'SF Pro Text', system-ui, sans-serif;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0 0 1.25rem;
+}
+
+.about-text p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 480px) {
+  body.page {
+    padding: 1.5rem 1.5rem;
+  }
+
+  .page-nav {
+    margin-bottom: 3rem;
+  }
+
+  .page-content h1 {
+    font-size: 1.75rem;
+  }
+
+  .lede {
+    font-size: 1.1rem;
   }
 }

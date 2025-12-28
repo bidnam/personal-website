@@ -183,6 +183,21 @@ for (let i = 0; i < positions.length; i += 3) {
   positions[i + 1] = height;
 }
 
+// Store target heights for intro animation, then reset to flat
+const targetHeights = [];
+for (let i = 0; i < positions.length; i += 3) {
+  targetHeights.push(positions[i + 1]);  // Store target Y
+  positions[i + 1] = 0;  // Start flat
+}
+geometry.attributes.position.needsUpdate = true;
+
+// Intro animation state
+let introProgress = 0;
+const introDuration = 1.8;  // seconds
+const introStartTime = performance.now();
+let introComplete = false;
+let labelsRevealed = false;
+
 // Compute normals for geometric look
 geometry.computeVertexNormals();
 
@@ -299,7 +314,7 @@ Object.entries(mainPeaks).forEach(([name, peak]) => {
 
 // Interaction state
 const mouse = { x: 0, y: 0 };
-const baseRotation = { x: 0, y: 0 };      // Set by dragging, persists
+const baseRotation = { x: 0, y: -0.35 };  // Start rotated 20° clockwise
 const mouseOffset = { x: 0, y: 0 };       // Subtle parallax from mouse
 const currentRotation = { x: 0, y: 0 };
 let isDragging = false;
@@ -362,7 +377,7 @@ document.addEventListener('keydown', (e) => {
     selectedPeakIndex = (selectedPeakIndex - 1 + peakNames.length) % peakNames.length;
     setHoveredPeak(peakNames[selectedPeakIndex]);
   } else if (e.key === 'Enter' && selectedPeakIndex >= 0) {
-    console.log('Navigate to:', peakNames[selectedPeakIndex]);
+    navigateToPeak(peakNames[selectedPeakIndex]);
   }
 });
 
@@ -378,6 +393,16 @@ document.querySelectorAll('.peak-line').forEach(el => {
 
 const raycaster = new THREE.Raycaster();
 let hoveredPeak = null;
+
+function revealLabels() {
+  labelsRevealed = true;
+  document.querySelectorAll('.peak-label').forEach(el => {
+    el.classList.add('visible');
+  });
+  document.querySelectorAll('.peak-line').forEach(el => {
+    el.classList.add('visible');
+  });
+}
 
 function updateLabelPositions() {
   // Ensure world matrix is up to date after rotation
@@ -510,8 +535,7 @@ function clearHover() {
 document.querySelectorAll('.nav-label').forEach(btn => {
   btn.addEventListener('click', () => {
     const peakName = btn.dataset.peak;
-    console.log('Navigate to:', peakName);
-    // Navigation would happen here
+    navigateToPeak(peakName);
   });
   btn.addEventListener('mouseenter', () => {
     const peakName = btn.dataset.peak;
@@ -557,8 +581,7 @@ function onPeakClick(e) {
     });
 
     if (clickedPeak) {
-      console.log('Navigate to:', clickedPeak);
-      // Navigation would happen here
+      navigateToPeak(clickedPeak);
     }
   }
 }
@@ -573,6 +596,32 @@ function animate() {
   requestAnimationFrame(animate);
 
   time += 0.01;
+
+  // Intro animation: terrain grows from flat
+  if (!introComplete) {
+    const elapsed = (performance.now() - introStartTime) / 1000;
+    introProgress = Math.min(elapsed / introDuration, 1);
+
+    // Ease-out curve for natural deceleration
+    const eased = 1 - Math.pow(1 - introProgress, 3);
+
+    const positions = geometry.attributes.position.array;
+    for (let i = 0; i < positions.length; i += 3) {
+      const targetY = targetHeights[i / 3];
+      positions[i + 1] = targetY * eased;
+    }
+    geometry.attributes.position.needsUpdate = true;
+    geometry.computeVertexNormals();
+
+    // Show labels at 80%
+    if (introProgress >= 0.8 && !labelsRevealed) {
+      revealLabels();
+    }
+
+    if (introProgress >= 1) {
+      introComplete = true;
+    }
+  }
 
   const timeSinceInteraction = Date.now() - lastInteractionTime;
   if (timeSinceInteraction > idleThreshold && !isDragging) {
@@ -636,3 +685,36 @@ document.addEventListener('click', (e) => {
     infoPanel.classList.remove('open');
   }
 });
+
+// Page navigation with zoom + fade transition
+function navigateToPeak(peakName) {
+  const peak = peakData[peakName];
+  if (!peak) return;
+
+  // Create transition overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'page-transition-overlay';
+  document.body.appendChild(overlay);
+
+  // Trigger camera zoom toward peak
+  const zoomTarget = { x: peak.x * 0.5, y: peak.actualHeight + 2, z: peak.z * 0.5 };
+  const zoomSpeed = 0.15;
+
+  function animateZoom() {
+    camera.position.x += (zoomTarget.x - camera.position.x) * zoomSpeed;
+    camera.position.y += (zoomTarget.y - camera.position.y) * zoomSpeed;
+    camera.position.z += (zoomTarget.z - camera.position.z) * zoomSpeed;
+  }
+
+  // Start zoom animation
+  const zoomInterval = setInterval(animateZoom, 16);
+
+  // Fade overlay in, then navigate
+  requestAnimationFrame(() => {
+    overlay.classList.add('active');
+    setTimeout(() => {
+      clearInterval(zoomInterval);
+      window.location.href = `${peakName}.html`;
+    }, 400);
+  });
+}
