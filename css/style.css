@@ -64,7 +64,7 @@ body.dragging {
 
 .name {
   font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 400;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -525,7 +525,7 @@ body.page {
 
 .inner-name {
   font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 1rem;
+  font-size: 1.1rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -601,16 +601,41 @@ body.page {
 
 .nav-panel-link {
   display: block;
+  position: relative;
+  overflow: hidden;
   font-family: 'Instrument Serif', Georgia, serif;
   font-size: 1.1rem;
   color: var(--text-secondary);
   text-decoration: none;
   padding: 0.5rem 0;
   white-space: nowrap;
-  transition: color 0.2s ease;
+  height: 1.8rem;
+  line-height: 1.8rem;
 }
 
-.nav-panel-link:hover,
+.nav-panel-link span {
+  display: block;
+  transition: transform 0.25s ease;
+}
+
+.nav-panel-link::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  padding: 0.5rem 0;
+  color: var(--accent);
+  transition: transform 0.25s ease;
+}
+
+.nav-panel-link:hover span {
+  transform: translateY(-100%);
+}
+
+.nav-panel-link:hover::after {
+  transform: translateY(-100%);
+}
+
 .nav-panel-link.active {
   color: var(--accent);
 }

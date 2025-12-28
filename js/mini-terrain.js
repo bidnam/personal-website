@@ -5,7 +5,7 @@ if (canvas) {
   scene.background = new THREE.Color(0xF8F6F1);
 
   const camera = new THREE.PerspectiveCamera(50, 80/50, 0.1, 100);
-  camera.position.set(0, 2.2, 3.2);  // Closer to fill frame
+  camera.position.set(0, 2.8, 3.8);  // Pull back to show full rotation
   camera.lookAt(0, 0, 0);
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
