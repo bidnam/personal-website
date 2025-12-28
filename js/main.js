@@ -460,7 +460,7 @@ function updateLabelPositions() {
 }
 
 function checkPeakHover() {
-  if (isDragging) return;
+  if (isDragging || !introComplete) return;
 
   // Note: mouse.y needs to be negated for Three.js coordinate system
   raycaster.setFromCamera({ x: mouse.x, y: -mouse.y }, camera);
