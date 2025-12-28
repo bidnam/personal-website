@@ -14,19 +14,31 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="page about-page">
-  <nav class="page-nav">
-    <a href="index.html" class="back-link">&larr; Terrain</a>
+  <header class="inner-header">
+    <a href="index.html" class="inner-name">Bidnam Lee</a>
+
+    <a href="index.html" class="mini-terrain-link" title="Return to terrain">
+      <canvas id="mini-terrain"></canvas>
+    </a>
+
+    <button class="menu-toggle" aria-label="Menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </header>
+
+  <nav class="drawer">
+    <a href="about.html" class="drawer-link active">About</a>
+    <a href="work.html" class="drawer-link">Work</a>
+    <a href="writing.html" class="drawer-link">Writing</a>
+    <a href="contact.html" class="drawer-link">Contact</a>
   </nav>
+
+  <div class="drawer-overlay"></div>
 
   <main class="page-content">
     <header class="page-header">
-      <div class="contour-mark">
-        <svg viewBox="0 0 32 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M2 18C8 14 14 12 16 12C18 12 24 14 30 18" stroke="#4A5D4A" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M4 12C9 9 13 7.5 16 7.5C19 7.5 23 9 28 12" stroke="#4A5D4A" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M8 6C11 4 14 3 16 3C18 3 21 4 24 6" stroke="#4A5D4A" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </div>
       <h1>About</h1>
     </header>
 
@@ -38,5 +50,9 @@
       <p>Before consulting, I was a writer. That foundation shapes how I approach strategy: every framework should tell a story, every insight should move people to act.</p>
     </div>
   </main>
+
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="js/mini-terrain.js"></script>
 </body>
 </html>
