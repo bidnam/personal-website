@@ -639,3 +639,45 @@ body.page {
   transform: translateY(-50%) scaleY(1);
   background: var(--accent);
 }
+
+/* Page Footer */
+.page-footer {
+  max-width: 640px;
+  margin: 4rem auto 0;
+  padding: 2rem 0;
+  border-top: 1px solid var(--text-muted);
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-copyright {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.footer-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.footer-links a {
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: var(--accent-warm);
+}
+
+@media (max-width: 480px) {
+  .footer-content {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+}
