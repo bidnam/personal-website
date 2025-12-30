@@ -368,19 +368,6 @@ document.addEventListener('touchmove', (e) => {
 }, { passive: true });
 document.addEventListener('touchend', onDragEnd);
 
-document.addEventListener('keydown', (e) => {
-  lastInteractionTime = Date.now();
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-    selectedPeakIndex = (selectedPeakIndex + 1) % peakNames.length;
-    setHoveredPeak(peakNames[selectedPeakIndex]);
-  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-    selectedPeakIndex = (selectedPeakIndex - 1 + peakNames.length) % peakNames.length;
-    setHoveredPeak(peakNames[selectedPeakIndex]);
-  } else if (e.key === 'Enter' && selectedPeakIndex >= 0) {
-    navigateToPeak(peakNames[selectedPeakIndex]);
-  }
-});
-
 const peakLabels = {};
 document.querySelectorAll('.peak-label').forEach(el => {
   peakLabels[el.dataset.peak] = el;

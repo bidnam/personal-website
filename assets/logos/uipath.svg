@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 50" fill="#000">
+  <!-- Square border around Ui -->
+  <rect x="0" y="0" width="50" height="50" fill="none" stroke="#000" stroke-width="4"/>
+  <!-- U -->
+  <path d="M10,12 h6 v20 c0,4 2,6 6,6 s6,-2 6,-6 v-20 h6 v20 c0,8 -5,12 -12,12 s-12,-4 -12,-12 z"/>
+  <!-- i -->
+  <rect x="38" y="12" width="6" height="6"/>
+  <rect x="38" y="22" width="6" height="22"/>
+  <!-- Path text -->
+  <path d="M60,18 h12 c6,0 10,4 10,10 s-4,10 -10,10 h-6 v12 h-6 z M66,32 h5 c3,0 5,-2 5,-4 s-2,-4 -5,-4 h-5 z"/>
+  <path d="M86,28 c0,-6 4,-11 10,-11 s10,5 10,12 v2 h-14 c1,3 3,5 6,5 c2,0 4,-1 5,-2 l3,4 c-2,2 -5,4 -9,4 c-7,0 -11,-5 -11,-14 z M100,27 c0,-3 -2,-5 -4,-5 s-4,2 -4,5 z"/>
+  <path d="M110,12 h6 v6 h5 v5 h-5 v12 c0,2 1,3 3,3 h2 v5 h-4 c-5,0 -7,-3 -7,-8 v-12 h-4 v-5 h4 z"/>
+  <path d="M126,8 h6 v15 c2,-3 5,-5 9,-5 c6,0 9,4 9,10 v22 h-6 v-20 c0,-4 -2,-6 -5,-6 s-6,2 -7,5 v21 h-6 z"/>
+</svg>

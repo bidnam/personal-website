@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 50" fill="#000">
+  <!-- Spiral S icon -->
+  <path d="M25,8 a17,17 0 0,1 0,34 a10,10 0 0,1 0,-20 a5,5 0 0,0 0,10" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+  <!-- sustana text -->
+  <text x="55" y="35" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400" letter-spacing="1">sustana</text>
+</svg>
