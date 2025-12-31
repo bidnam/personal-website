@@ -60,7 +60,7 @@ function noise2D(x, z, seed = 0) {
 const mainPeaks = {
   about: { x: -1.5, z: -1.2, height: 1.4, radius: 0.65 },    // Back-left (larger radius)
   work: { x: 0.0, z: 0.0, height: 2.0, radius: 0.7 },        // Center (tallest)
-  writing: { x: 1.5, z: -1.0, height: 1.3, radius: 0.6 },    // Back-right
+  explorations: { x: 1.5, z: -1.0, height: 1.3, radius: 0.6 },    // Back-right
   contact: { x: -1.2, z: 1.4, height: 1.1, radius: 0.55 }    // Front-left
 };
 
@@ -74,7 +74,7 @@ const smallPeaks = [
 ];
 
 const allPeaks = [...Object.values(mainPeaks), ...smallPeaks];
-const peakNames = ['about', 'work', 'writing', 'contact'];
+const peakNames = ['about', 'work', 'explorations', 'contact'];
 
 // Create terrain with very low segments for chunky angular facets
 const terrainSize = 5.0;
@@ -177,7 +177,7 @@ for (let i = 0; i < positions.length; i += 3) {
 
   // Add ridgelines connecting to central Work peak
   height += ridgeline(x, z, mainPeaks.work, mainPeaks.about, 0.12);
-  height += ridgeline(x, z, mainPeaks.work, mainPeaks.writing, 0.1);
+  height += ridgeline(x, z, mainPeaks.work, mainPeaks.explorations, 0.1);
   height += ridgeline(x, z, mainPeaks.work, mainPeaks.contact, 0.08);
 
   positions[i + 1] = height;
@@ -302,7 +302,7 @@ function getHeightAt(x, z) {
     height += mountainPeak(x, z, p);
   });
   height += ridgeline(x, z, mainPeaks.work, mainPeaks.about, 0.12);
-  height += ridgeline(x, z, mainPeaks.work, mainPeaks.writing, 0.1);
+  height += ridgeline(x, z, mainPeaks.work, mainPeaks.explorations, 0.1);
   height += ridgeline(x, z, mainPeaks.work, mainPeaks.contact, 0.08);
   return height;
 }

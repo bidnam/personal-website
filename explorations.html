@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contact - Bidnam Lee</title>
+  <title>Explorations - Bidnam Lee</title>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,7 +13,7 @@
   <!-- Styles -->
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="page contact-page">
+<body class="page explorations-page">
   <header class="inner-header">
     <a href="index.html" class="inner-name">Bidnam Lee</a>
 
@@ -30,8 +30,8 @@
       <nav class="nav-panel">
         <a href="work.html" class="nav-panel-link">Work</a>
         <a href="about.html" class="nav-panel-link">About</a>
-        <a href="explorations.html" class="nav-panel-link">Explorations</a>
-        <a href="contact.html" class="nav-panel-link active">Contact</a>
+        <a href="explorations.html" class="nav-panel-link active">Explorations</a>
+        <a href="contact.html" class="nav-panel-link">Contact</a>
       </nav>
     </div>
   </header>
@@ -62,20 +62,39 @@
     </footer>
   </div>
 
-  <main class="page-content">
-    <header class="page-header">
-      <h1>Contact</h1>
+  <main class="explorations-content">
+    <header class="explorations-header">
+      <h1>Explorations</h1>
+      <p class="lede">Building with AI. Learning out loud.</p>
     </header>
 
-    <p class="lede">Let's do big things together.</p>
+    <section class="exploration-section">
+      <span class="section-tag">Meta</span>
+      <h2 class="section-title">This Website</h2>
+      <p class="section-description">Built entirely with Claude Code—from the 3D terrain to every line of CSS. An experiment in AI-assisted development.</p>
+      <div class="section-visual">
+        <div class="visual-placeholder" data-label="Homepage screenshot"></div>
+      </div>
+    </section>
 
-    <div class="contact-content">
-      <p class="contact-intro">Whether you're working through a hard problem, curious about strategy, or just want to swap notes over coffee, reach out. Who knows where it might go?</p>
+    <section class="exploration-section">
+      <span class="section-tag">Tools</span>
+      <h2 class="section-title">Claude Code Projects</h2>
+      <p class="section-description">Workflows, automations, and utilities built to extend what's possible with AI coding assistants.</p>
+      <div class="section-visual">
+        <div class="visual-placeholder" data-label="Terminal / code output"></div>
+      </div>
+    </section>
 
-      <p class="contact-links">Drop me a line at <a href="mailto:bidnam@gmail.com">bidnam@gmail.com</a>. I'm also on <a href="https://www.linkedin.com/in/bidnam/" target="_blank" rel="noopener">LinkedIn</a>.</p>
+    <section class="exploration-section">
+      <span class="section-tag">Learning</span>
+      <h2 class="section-title">AI Experiments</h2>
+      <p class="section-description">Testing boundaries, finding patterns, and documenting what works (and what doesn't) across AI tools.</p>
+      <div class="section-visual">
+        <div class="visual-placeholder" data-label="Experiment visual"></div>
+      </div>
+    </section>
 
-      <p class="contact-note">Based in Brooklyn, NYC.</p>
-    </div>
   </main>
 
   <footer class="site-footer">
@@ -97,5 +116,6 @@
   <!-- Three.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="js/mini-terrain.js"></script>
+  <script src="js/explorations.js"></script>
 </body>
 </html>

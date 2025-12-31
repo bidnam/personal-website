@@ -409,18 +409,6 @@ body.page {
   padding: 105px 4rem 2rem;  /* Top padding for fixed header */
   cursor: default;
   overflow: auto;
-  animation: fadeFromGreen 0.4s ease;
-}
-
-@keyframes fadeFromGreen {
-  from {
-    background: var(--accent);
-    opacity: 0.8;
-  }
-  to {
-    background: var(--bg-primary);
-    opacity: 1;
-  }
 }
 
 .page-nav {
@@ -566,6 +554,10 @@ body.page {
   padding: 0 1.5rem;
   background: var(--bg-primary);
   z-index: 100;
+  transition: height 0.4s cubic-bezier(0.19, 1, 0.22, 1),
+              padding 0.4s ease,
+              align-items 0.4s ease,
+              background 0.4s ease 0.15s;  /* Delay background on close */
 }
 
 .inner-name {
@@ -575,7 +567,7 @@ body.page {
   text-transform: uppercase;
   color: var(--text-muted);
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: color 0.4s ease 0.15s, font-size 0.4s ease;  /* Delay color on close */
 }
 
 .inner-name:hover {
@@ -587,6 +579,7 @@ body.page {
   width: 100px;
   height: 65px;
   display: block;
+  transition: opacity 0.4s ease 0.13s;  /* Delay on close */
 }
 
 #mini-terrain {
@@ -622,26 +615,9 @@ body.page {
   position: relative;
 }
 
-/* Navigation Panel */
+/* Navigation Panel - Hidden by default, shown via menu-open */
 .nav-panel {
-  position: absolute;
-  top: calc(100% + 10px);
-  right: 0;
-  background: var(--bg-primary);
-  border: 1px solid var(--text-muted);
-  border-radius: 4px;
-  padding: 0.75rem 1.25rem;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-  z-index: 101;
-}
-
-.nav-panel.open {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0);
+  display: none;
 }
 
 .nav-panel-link {
@@ -684,6 +660,152 @@ body.page {
   transform: translateY(-50%) scaleY(1);
   background: var(--accent);
 }
+
+/* Menu Overlay Panel - fullscreen */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #1A4D2E;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+  z-index: 99;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Nav links in overlay */
+.menu-overlay .overlay-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+}
+
+.menu-overlay .overlay-link {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  color: var(--bg-primary);
+  text-decoration: none;
+  padding: 0.2rem 0;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.3s ease-in-out, transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* Staggered entrance */
+.menu-overlay.active .overlay-link {
+  opacity: 1;
+  transform: translateY(0);
+}
+.menu-overlay.active .overlay-link:nth-child(1) { transition-delay: 0.1s; }
+.menu-overlay.active .overlay-link:nth-child(2) { transition-delay: 0.16s; }
+.menu-overlay.active .overlay-link:nth-child(3) { transition-delay: 0.22s; }
+.menu-overlay.active .overlay-link:nth-child(4) { transition-delay: 0.28s; }
+.menu-overlay.active .overlay-link:nth-child(5) { transition-delay: 0.34s; }
+
+/* Reset transition-delay when interacting */
+.menu-overlay .overlay-nav:hover .overlay-link {
+  transition-delay: 0s;
+}
+
+/* Dim all links when hovering nav */
+.menu-overlay .overlay-nav:hover .overlay-link {
+  opacity: 0.5;
+}
+
+/* Highlight the specific hovered link */
+.menu-overlay .overlay-nav .overlay-link:hover {
+  opacity: 1;
+}
+
+/* Overlay footer */
+.menu-overlay .overlay-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.4s ease 0.3s, transform 0.4s ease 0.3s;
+}
+
+.menu-overlay.active .overlay-footer {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.menu-overlay .overlay-footer-copyright {
+  font-size: 0.85rem;
+  color: rgba(248, 246, 241, 0.6);
+}
+
+.menu-overlay .overlay-footer-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.menu-overlay .overlay-footer-links a {
+  color: rgba(248, 246, 241, 0.6);
+  transition: color 0.2s ease;
+}
+
+.menu-overlay .overlay-footer-links a:hover {
+  color: var(--bg-primary);
+}
+
+.menu-overlay .overlay-footer-links svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Header state when menu is open */
+.inner-header.menu-open {
+  background: transparent;
+  transition: background 0s;  /* Instant when opening */
+}
+
+.inner-header.menu-open .inner-name {
+  color: var(--bg-primary);
+  transition: color 0s;  /* Instant when opening */
+}
+
+.inner-header.menu-open .mini-terrain-link {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0s;  /* Hide instantly when menu opens */
+}
+
+/* Hamburger to X transformation */
+.menu-toggle.open span {
+  background: var(--bg-primary);
+}
+
+.menu-toggle.open span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.menu-toggle.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-toggle.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
 
 /* Site Footer */
 .site-footer {
@@ -1135,5 +1257,149 @@ body.page {
 
   .contact-value {
     font-size: 1rem;
+  }
+}
+
+/* Explorations Page - Full-Width Immersive Sections */
+.explorations-page {
+  padding: 105px 0 4rem;
+}
+
+.explorations-content {
+  min-height: calc(100vh - 105px - 4rem);
+}
+
+.explorations-header {
+  max-width: 800px;
+  margin: 0 auto 4rem;
+  padding: 0 2rem;
+}
+
+.explorations-header h1 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.explorations-header .lede {
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+}
+
+/* Individual exploration sections */
+.exploration-section {
+  max-width: 800px;
+  margin: 0 auto 5rem;
+  padding: 0 2rem;
+}
+
+.exploration-section:last-of-type {
+  margin-bottom: 3rem;
+}
+
+.section-tag {
+  display: inline-block;
+  font-size: 0.7rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+}
+
+.section-title {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.75rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0 0 0.75rem;
+}
+
+.section-description {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 1.5rem;
+  max-width: 600px;
+}
+
+/* Visual container */
+.section-visual {
+  margin-top: 1.5rem;
+}
+
+.section-visual img {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* Placeholder for screenshots */
+.visual-placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: linear-gradient(135deg, rgba(74, 93, 74, 0.06) 0%, rgba(74, 93, 74, 0.02) 100%);
+  border: 1px dashed rgba(74, 93, 74, 0.2);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.visual-placeholder::after {
+  content: attr(data-label);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+/* Explorations page responsive */
+@media (max-width: 768px) {
+  .explorations-header {
+    padding: 0 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .explorations-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .exploration-section {
+    padding: 0 1.5rem;
+    margin-bottom: 4rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .section-description {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .explorations-header {
+    padding: 0 1.25rem;
+  }
+
+  .exploration-section {
+    padding: 0 1.25rem;
+    margin-bottom: 3rem;
+  }
+
+  .section-title {
+    font-size: 1.35rem;
+  }
+
+  .section-description {
+    font-size: 0.95rem;
+  }
+
+  .visual-placeholder {
+    aspect-ratio: 4 / 3;
   }
 }

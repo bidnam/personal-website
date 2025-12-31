@@ -1,14 +1,16 @@
 // Mini terrain for inner page header
 const canvas = document.getElementById('mini-terrain');
+let renderer, camera;  // Expose for menu resize
+
 if (canvas) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0xF8F6F1);
 
-  const camera = new THREE.PerspectiveCamera(50, 100/65, 0.1, 100);
+  camera = new THREE.PerspectiveCamera(50, 100/65, 0.1, 100);
   camera.position.set(0, 3.2, 4.5);  // Pull back to show full rotation
   camera.lookAt(0, 0, 0);
 
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setSize(100, 65);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
@@ -97,18 +99,35 @@ if (canvas) {
   animate();
 }
 
-// Nav panel toggle
+// Menu overlay toggle
 const menuToggle = document.querySelector('.menu-toggle');
-const navPanel = document.querySelector('.nav-panel');
+const menuOverlay = document.querySelector('.menu-overlay');
+const innerHeader = document.querySelector('.inner-header');
+
+function openMenu() {
+  menuOverlay?.classList.add('active');
+  menuToggle?.classList.add('open');
+  innerHeader?.classList.add('menu-open');
+}
+
+function closeMenu() {
+  menuOverlay?.classList.remove('active');
+  menuToggle?.classList.remove('open');
+  innerHeader?.classList.remove('menu-open');
+}
 
 menuToggle?.addEventListener('click', (e) => {
   e.stopPropagation();
-  navPanel.classList.toggle('open');
+  if (menuOverlay?.classList.contains('active')) {
+    closeMenu();
+  } else {
+    openMenu();
+  }
 });
 
-// Close panel when clicking outside
-document.addEventListener('click', (e) => {
-  if (navPanel?.classList.contains('open') && !navPanel.contains(e.target)) {
-    navPanel.classList.remove('open');
+// Close menu with Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && menuOverlay?.classList.contains('active')) {
+    closeMenu();
   }
 });
