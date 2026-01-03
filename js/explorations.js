@@ -3,7 +3,15 @@
 (function() {
   const entries = document.querySelectorAll('.log-entry');
   const preview = document.querySelector('.hover-preview');
-  const previewMedia = document.querySelector('.hover-preview-media');
+  const previewImg = document.querySelector('.hover-preview-img');
+  const previewVideo = document.querySelector('.hover-preview-video');
+
+  // Modal elements
+  const modal = document.querySelector('.exploration-modal');
+  const modalBackdrop = document.querySelector('.modal-backdrop');
+  const modalClose = document.querySelector('.modal-close');
+  const modalMedia = document.querySelector('.modal-media');
+  const modalContent = document.querySelector('.modal-content');
 
   if (!preview || entries.length === 0) return;
 
@@ -16,16 +24,19 @@
 
   // Media file mapping (key -> filename)
   const mediaFiles = {
-    'website': 'website.gif',
-    'prompt-enhancer': 'prompt-enhancer.gif',
-    'event-scorecard': 'event-scorecard.gif',
-    'web-scout': 'web-scout.gif',
-    'work-design': 'AI Work Design.gif',
-    'usage-pilot': 'AI Documentation Pilot.gif',
-    'ai-patterns': 'Reusable AI Patterns.gif',
-    'slide-agent': 'consulting grade slide.gif',
-    'positioning-sim': 'Brand Positioning simulation.gif'
+    'website': 'website.mp4',
+    'prompt-enhancer': 'prompt-enhancer.mp4',
+    'event-scorecard': 'event-scorecard.mp4',
+    'web-scout': 'web-scout.mp4',
+    'work-design': 'AI-work-design.mp4',
+    'usage-pilot': 'AI-documentation-pilot.mp4',
+    'ai-patterns': 'reusable-ai-patterns.mp4',
+    'slide-agent': 'consulting-grade.mp4',
+    'positioning-sim': 'brandpositioningsimulation.mp4'
   };
+
+  // Entries that should use smaller preview (tall aspect ratio)
+  const smallPreviewEntries = ['ai-patterns', 'slide-agent', 'positioning-sim'];
 
   // Smooth lerp function
   function lerp(start, end, factor) {
@@ -92,32 +103,63 @@
       mouseY = e.clientY + 20;
     }
 
+    const isVideo = filename.endsWith('.mp4');
+    const activeMedia = isVideo ? previewVideo : previewImg;
+    const inactiveMedia = isVideo ? previewImg : previewVideo;
+
     // If switching to a different media, scale down then expand back gracefully
     if (currentMediaKey && currentMediaKey !== mediaKey) {
       // Step 1: Shrink down toward origin
-      previewMedia.classList.add('scale-out');
+      previewImg.classList.add('scale-out');
+      previewVideo.classList.add('scale-out');
 
       setTimeout(() => {
-        // Step 2: Swap image while scaled down
-        previewMedia.src = 'assets/explorations/' + filename;
-        previewMedia.alt = mediaKey;
-        previewMedia.classList.remove('scale-out');
-        previewMedia.classList.add('scale-in-ready');
+        // Step 2: Swap media while scaled down
+        inactiveMedia.style.display = 'none';
+        if (isVideo) {
+          previewVideo.src = 'assets/explorations/' + filename;
+          previewVideo.style.display = 'block';
+          previewVideo.play();
+        } else {
+          previewImg.src = 'assets/explorations/' + filename;
+          previewImg.alt = mediaKey;
+          previewImg.style.display = 'block';
+          previewVideo.pause();
+        }
+        previewImg.classList.remove('scale-out');
+        previewVideo.classList.remove('scale-out');
+        activeMedia.classList.add('scale-in-ready');
 
         // Step 3: Expand back gracefully
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            previewMedia.classList.remove('scale-in-ready');
+            activeMedia.classList.remove('scale-in-ready');
           });
         });
       }, 280);
     } else {
       // First hover or same entry
-      previewMedia.src = 'assets/explorations/' + filename;
-      previewMedia.alt = mediaKey;
+      inactiveMedia.style.display = 'none';
+      if (isVideo) {
+        previewVideo.src = 'assets/explorations/' + filename;
+        previewVideo.style.display = 'block';
+        previewVideo.play();
+      } else {
+        previewImg.src = 'assets/explorations/' + filename;
+        previewImg.alt = mediaKey;
+        previewImg.style.display = 'block';
+        previewVideo.pause();
+      }
     }
 
     currentMediaKey = mediaKey;
+
+    // Apply small preview class for tall aspect ratio entries
+    if (smallPreviewEntries.includes(mediaKey)) {
+      preview.classList.add('small');
+    } else {
+      preview.classList.remove('small');
+    }
 
     // Initialize position to current mouse
     currentX = mouseX;
@@ -142,6 +184,7 @@
       preview.classList.remove('visible');
       isHovering = false;
       currentMediaKey = null;
+      previewVideo.pause();
     }
     // If moving to another entry, keep currentMediaKey for transition
   }
@@ -154,8 +197,48 @@
     entry.addEventListener('mouseleave', handleEntryLeave);
   });
 
-  // Disable on touch devices
-  if ('ontouchstart' in window) {
+  // Touch device handling - use modal instead of hover
+  const isTouchDevice = 'ontouchstart' in window;
+
+  if (isTouchDevice) {
+    // Hide hover preview on touch devices
     preview.style.display = 'none';
+
+    // Handle entry tap to open modal
+    function handleEntryTap(e) {
+      const mediaKey = e.currentTarget.dataset.media;
+      const filename = mediaFiles[mediaKey];
+      if (!filename) return;
+
+      // Set modal content
+      modalMedia.src = 'assets/explorations/' + filename;
+
+      // Apply small class for tall aspect ratio entries
+      if (smallPreviewEntries.includes(mediaKey)) {
+        modalContent.classList.add('small');
+      } else {
+        modalContent.classList.remove('small');
+      }
+
+      // Show modal
+      modal.classList.add('visible');
+      modalMedia.play();
+    }
+
+    // Close modal
+    function closeModal() {
+      modal.classList.remove('visible');
+      modalMedia.pause();
+      modalMedia.src = '';
+    }
+
+    // Add tap handlers to entries
+    entries.forEach(entry => {
+      entry.addEventListener('click', handleEntryTap);
+    });
+
+    // Close on backdrop tap or X button
+    modalBackdrop.addEventListener('click', closeModal);
+    modalClose.addEventListener('click', closeModal);
   }
 })();
