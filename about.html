@@ -94,6 +94,14 @@
     <div class="text-hover-preview" aria-hidden="true">
       <img src="" alt="" />
     </div>
+
+    <!-- Mobile Modal -->
+    <div class="exploration-modal text-modal" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content">
+        <img class="modal-media" src="" alt="" />
+      </div>
+    </div>
   </main>
 
   <footer class="site-footer">
@@ -180,9 +188,35 @@
       });
     });
 
-    // Disable on touch devices
+    // On touch devices, use modal instead of hover
     if ('ontouchstart' in window) {
       preview.style.display = 'none';
+
+      const modal = document.querySelector('.text-modal');
+      const modalImg = modal?.querySelector('img');
+      const modalBackdrop = modal?.querySelector('.modal-backdrop');
+
+      triggers.forEach(trigger => {
+        trigger.addEventListener('click', (e) => {
+          e.preventDefault();
+          const imageSrc = trigger.dataset.image;
+          if (imageSrc && modalImg && modal) {
+            modalImg.src = imageSrc;
+            modal.classList.add('visible');
+          }
+        });
+      });
+
+      modalBackdrop?.addEventListener('click', () => {
+        modal?.classList.remove('visible');
+      });
+
+      // Close on escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          modal?.classList.remove('visible');
+        }
+      });
     }
   })();
   </script>
