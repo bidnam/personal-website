@@ -30,7 +30,7 @@ function updateCameraTargetForViewport() {
   targetCameraZ = 13.0 + (7.5 - 13.0) * t; // 13.0 → 7.5
 
   // Push terrain down on smaller screens to make room for header
-  targetTerrainOffsetY = -1.0 + (0 - (-1.0)) * t;  // -1.0 → 0
+  targetTerrainOffsetY = -1.5 + (0 - (-1.5)) * t;  // -1.5 → 0 (more offset on mobile)
 }
 
 updateCameraTargetForViewport();
@@ -324,6 +324,16 @@ let dragRotationStart = { x: 0, y: 0 };
 let lastInteractionTime = Date.now();
 let selectedPeakIndex = -1;
 
+// Touch device detection
+const isTouchDevice = 'ontouchstart' in window;
+const dragSensitivityX = isTouchDevice ? 0.008 : 0.005;  // Looser on mobile
+const dragSensitivityY = isTouchDevice ? 0.005 : 0.003;
+
+// Initial faster auto-rotate (slows after first interaction)
+let initialPhase = true;
+const initialAutoRotateSpeed = -0.002;
+const normalAutoRotateSpeed = -0.0006;
+
 function onDragStart(clientX, clientY) {
   isDragging = true;
   dragStart = { x: clientX, y: clientY };
@@ -344,11 +354,12 @@ function onDragMove(clientX, clientY) {
   } else {
     const deltaX = clientX - dragStart.x;
     const deltaY = clientY - dragStart.y;
-    baseRotation.y = dragRotationStart.y + deltaX * 0.005;
+    baseRotation.y = dragRotationStart.y + deltaX * dragSensitivityX;
     // Vertical rotation with ±20° constraint
-    const verticalRotation = dragRotationStart.x + deltaY * 0.003;
+    const verticalRotation = dragRotationStart.x + deltaY * dragSensitivityY;
     baseRotation.x = Math.max(-0.35, Math.min(0.35, verticalRotation));
     lastInteractionTime = Date.now();
+    initialPhase = false;  // End initial fast rotation after first interaction
   }
 }
 
@@ -379,6 +390,41 @@ const peakLines = {};
 document.querySelectorAll('.peak-line').forEach(el => {
   peakLines[el.dataset.peak] = el;
 });
+
+// Mobile peak navigation arrows
+const prevBtn = document.querySelector('.peak-nav-prev');
+const nextBtn = document.querySelector('.peak-nav-next');
+let mobilePeakIndex = -1;  // -1 = none selected
+
+prevBtn?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  if (mobilePeakIndex === -1) {
+    mobilePeakIndex = peakNames.length - 1;  // Start at last
+  } else {
+    mobilePeakIndex = (mobilePeakIndex - 1 + peakNames.length) % peakNames.length;
+  }
+  setHoveredPeak(peakNames[mobilePeakIndex]);
+  lastInteractionTime = Date.now();
+  initialPhase = false;
+});
+
+nextBtn?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  mobilePeakIndex = (mobilePeakIndex + 1) % peakNames.length;
+  setHoveredPeak(peakNames[mobilePeakIndex]);
+  lastInteractionTime = Date.now();
+  initialPhase = false;
+});
+
+// Make labels clickable on touch devices
+if (isTouchDevice) {
+  Object.entries(peakLabels).forEach(([name, el]) => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      navigateToPeak(name);
+    });
+  });
+}
 
 const raycaster = new THREE.Raycaster();
 let hoveredPeak = null;
@@ -578,7 +624,6 @@ function onPeakClick(e) {
 document.addEventListener('click', onPeakClick);
 
 let time = 0;
-const autoRotateSpeed = -0.0006;
 const idleThreshold = 3000;
 
 function animate() {
@@ -614,7 +659,8 @@ function animate() {
 
   const timeSinceInteraction = Date.now() - lastInteractionTime;
   if (timeSinceInteraction > idleThreshold && !isDragging) {
-    baseRotation.y += autoRotateSpeed;
+    const rotateSpeed = initialPhase ? initialAutoRotateSpeed : normalAutoRotateSpeed;
+    baseRotation.y += rotateSpeed;
   }
 
   // Combine base rotation (from drag) with mouse parallax offset
