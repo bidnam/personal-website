@@ -132,6 +132,18 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// Prevent reload when clicking link to current page in menu
+document.querySelectorAll('.overlay-link').forEach(link => {
+  link.addEventListener('click', (e) => {
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const linkPage = link.getAttribute('href');
+    if (currentPage === linkPage) {
+      e.preventDefault();
+      closeMenu();
+    }
+  });
+});
+
 // Close menu before page is cached (so back button shows closed menu)
 window.addEventListener('pagehide', () => {
   closeMenu();
