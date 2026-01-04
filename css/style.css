@@ -45,10 +45,15 @@ body.dragging {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
-/* Clip reveal animation */
-@keyframes clipReveal {
+/* Word reveal animation */
+@keyframes wordReveal {
+  from {
+    opacity: 0;
+    transform: translateY(100%) rotate(2deg);
+  }
   to {
-    transform: translateY(0);
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
   }
 }
 
@@ -82,18 +87,22 @@ body.dragging {
   overflow: hidden;
 }
 
-.reveal-text {
-  display: block;
-  transform: translateY(100%);
-  animation: clipReveal 0.8s ease-out forwards;
+/* Splitting.js word animation */
+.name .word,
+.headline .word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(100%) rotate(2deg);
+  transform-origin: left bottom;
+  animation: wordReveal 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-.name .reveal-text {
-  animation-delay: 0.2s;
+.name .word {
+  animation-delay: calc(0.3s + (var(--word-index) * 0.06s));
 }
 
-.headline .reveal-text {
-  animation-delay: 0.4s;
+.headline .word {
+  animation-delay: calc(0.45s + (var(--word-index) * 0.015s));
 }
 
 .headline em {

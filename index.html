@@ -12,12 +12,14 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/splitting/dist/splitting.css" />
+  <link rel="stylesheet" href="https://unpkg.com/splitting/dist/splitting-cells.css" />
 </head>
 <body>
   <div class="container">
     <header class="header">
-      <p class="name"><span class="reveal-text">Bidnam Lee</span></p>
-      <h1 class="headline"><span class="reveal-text">I help organizations figure out who they need to be and how to get there.</span></h1>
+      <p class="name" data-splitting="words">Bidnam Lee</p>
+      <h1 class="headline" data-splitting="words">I help organizations figure out who they need to be and how to get there.</h1>
     </header>
 
     <div id="canvas-container"></div>
@@ -65,6 +67,12 @@
 
   <!-- Three.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Splitting.js for text animation -->
+  <script src="https://unpkg.com/splitting/dist/splitting.min.js"></script>
+  <script>
+    Splitting();
+  </script>
 
   <!-- Main Script -->
   <script src="js/main.js"></script>
