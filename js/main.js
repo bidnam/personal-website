@@ -400,6 +400,16 @@ const prevBtn = document.querySelector('.peak-nav-prev');
 const nextBtn = document.querySelector('.peak-nav-next');
 let mobilePeakIndex = -1;  // -1 = none selected
 
+// Rotate terrain so selected peak faces the viewer
+function rotateToPeak(peakName) {
+  const peak = mainPeaks[peakName];
+  if (!peak) return;
+
+  // Calculate angle to rotate terrain so peak faces viewer (toward +z camera)
+  const targetRotationY = -Math.atan2(peak.x, peak.z);
+  baseRotation.y = targetRotationY;
+}
+
 prevBtn?.addEventListener('click', (e) => {
   e.stopPropagation();
   if (mobilePeakIndex === -1) {
@@ -408,7 +418,9 @@ prevBtn?.addEventListener('click', (e) => {
     mobilePeakIndex = (mobilePeakIndex - 1 + peakNames.length) % peakNames.length;
   }
   manualPeakSelection = true;
-  setHoveredPeak(peakNames[mobilePeakIndex]);
+  const selectedPeak = peakNames[mobilePeakIndex];
+  setHoveredPeak(selectedPeak);
+  rotateToPeak(selectedPeak);
   lastInteractionTime = Date.now();
   initialPhase = false;
 });
@@ -417,7 +429,9 @@ nextBtn?.addEventListener('click', (e) => {
   e.stopPropagation();
   mobilePeakIndex = (mobilePeakIndex + 1) % peakNames.length;
   manualPeakSelection = true;
-  setHoveredPeak(peakNames[mobilePeakIndex]);
+  const selectedPeak = peakNames[mobilePeakIndex];
+  setHoveredPeak(selectedPeak);
+  rotateToPeak(selectedPeak);
   lastInteractionTime = Date.now();
   initialPhase = false;
 });
