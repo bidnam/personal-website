@@ -136,3 +136,16 @@ document.addEventListener('keydown', (e) => {
 window.addEventListener('pagehide', () => {
   closeMenu();
 });
+
+// Close menu instantly when page restored from bfcache (no transition flash)
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted && menuOverlay?.classList.contains('active')) {
+    // Disable transition for instant close
+    menuOverlay.style.transition = 'none';
+    closeMenu();
+    // Re-enable transition after a frame
+    requestAnimationFrame(() => {
+      menuOverlay.style.transition = '';
+    });
+  }
+});
