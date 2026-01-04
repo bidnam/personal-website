@@ -131,3 +131,10 @@ document.addEventListener('keydown', (e) => {
     closeMenu();
   }
 });
+
+// Close menu when page is restored from bfcache (back button)
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    closeMenu();
+  }
+});

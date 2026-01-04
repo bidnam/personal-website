@@ -318,6 +318,7 @@ const baseRotation = { x: 0, y: -0.35 };  // Start rotated 20° clockwise
 const mouseOffset = { x: 0, y: 0 };       // Subtle parallax from mouse
 const currentRotation = { x: 0, y: 0 };
 let isDragging = false;
+let hasMouseMoved = false;  // Don't check hover until mouse actually moves
 let dragStart = { x: 0, y: 0 };
 let dragRotationStart = { x: 0, y: 0 };
 let lastInteractionTime = Date.now();
@@ -332,6 +333,7 @@ function onDragStart(clientX, clientY) {
 }
 
 function onDragMove(clientX, clientY) {
+  hasMouseMoved = true;
   mouse.x = (clientX / window.innerWidth) * 2 - 1;
   mouse.y = (clientY / window.innerHeight) * 2 - 1;
 
@@ -447,7 +449,7 @@ function updateLabelPositions() {
 }
 
 function checkPeakHover() {
-  if (isDragging || !introComplete) return;
+  if (isDragging || !introComplete || !hasMouseMoved) return;
 
   // Note: mouse.y needs to be negated for Three.js coordinate system
   raycaster.setFromCamera({ x: mouse.x, y: -mouse.y }, camera);
@@ -705,3 +707,10 @@ function navigateToPeak(peakName) {
     }, 400);
   });
 }
+
+// Reload page when restored from bfcache (back button) to ensure terrain initializes
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    window.location.reload();
+  }
+});
