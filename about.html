@@ -79,7 +79,7 @@
 
           <p>My multi-disciplinary background helps me connect patterns and find solutions that span traditional domains and functions. As a copywriter, I helped develop award-winning campaigns for Nike while honing an ability to connect story to strategy. An MBA expanded my business acumen and appreciation for analytical rigor. Consulting across B2B tech, consumer goods, healthcare, retail, and financial services has taught me how to think flexibly and build iteratively.</p>
 
-          <p>Alongside that journey, I also coached high school lacrosse, turning an under-funded team that had never had a winning season into state champions. It's where I learned strategy without shared belief is just a playbook. Belief without strategy is just hope. Even with teenage boys.</p>
+          <p>Alongside that journey, I also coached high school lacrosse, turning an under-funded team that had never had a winning season into <span class="hover-trigger" data-image="assets/state-champions.jpg">state champions</span>. It's where I learned strategy without shared belief is just a playbook. Belief without strategy is just hope. Even with teenage boys.</p>
 
           <p>The contexts are always changing. But the approach doesn't: ask good questions, bring good people together, build alongside them.</p>
 
@@ -88,6 +88,11 @@
           <p>Currently, I'm a Global Partner at Ogilvy Consulting, leading brand and business transformation for enterprise clients. Before that, I was consulting hire #2 at COLLINS, helping it earn AdAge's Business Transformation Agency of the Year.</p>
         </div>
       </div>
+    </div>
+
+    <!-- Hover Preview -->
+    <div class="text-hover-preview" aria-hidden="true">
+      <img src="" alt="" />
     </div>
   </main>
 
@@ -110,5 +115,76 @@
   <!-- Three.js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="js/mini-terrain.js"></script>
+
+  <!-- Text hover preview -->
+  <script>
+  (function() {
+    const triggers = document.querySelectorAll('.hover-trigger');
+    const preview = document.querySelector('.text-hover-preview');
+    const previewImg = preview?.querySelector('img');
+
+    if (!preview || triggers.length === 0) return;
+
+    let mouseX = 0;
+    let mouseY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+
+      if (preview.classList.contains('visible')) {
+        const imgWidth = 360;
+        const imgHeight = 240;
+
+        let x = mouseX + 15;
+        let y = mouseY - imgHeight - 10;
+
+        if (x + imgWidth > window.innerWidth - 20) {
+          x = mouseX - imgWidth - 15;
+        }
+        if (y < 20) {
+          y = mouseY + 20;
+        }
+
+        preview.style.left = x + 'px';
+        preview.style.top = y + 'px';
+      }
+    });
+
+    triggers.forEach(trigger => {
+      trigger.addEventListener('mouseenter', (e) => {
+        const imageSrc = trigger.dataset.image;
+        if (!imageSrc) return;
+
+        previewImg.src = imageSrc;
+
+        // Position immediately
+        const imgWidth = 360;
+        const imgHeight = 240;
+        let x = e.clientX + 15;
+        let y = e.clientY - imgHeight - 10;
+        if (x + imgWidth > window.innerWidth - 20) {
+          x = e.clientX - imgWidth - 15;
+        }
+        if (y < 20) {
+          y = e.clientY + 20;
+        }
+        preview.style.left = x + 'px';
+        preview.style.top = y + 'px';
+
+        preview.classList.add('visible');
+      });
+
+      trigger.addEventListener('mouseleave', () => {
+        preview.classList.remove('visible');
+      });
+    });
+
+    // Disable on touch devices
+    if ('ontouchstart' in window) {
+      preview.style.display = 'none';
+    }
+  })();
+  </script>
 </body>
 </html>
