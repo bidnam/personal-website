@@ -132,9 +132,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Close menu when page is restored from bfcache (back button)
-window.addEventListener('pageshow', (event) => {
-  if (event.persisted) {
-    closeMenu();
-  }
+// Close menu before page is cached (so back button shows closed menu)
+window.addEventListener('pagehide', () => {
+  closeMenu();
 });
