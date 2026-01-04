@@ -1,3 +1,17 @@
+// Immediately close menu on page load (prevents flash on back button)
+(function() {
+  const overlay = document.querySelector('.menu-overlay');
+  const toggle = document.querySelector('.menu-toggle');
+  const header = document.querySelector('.inner-header');
+  if (overlay) overlay.style.transition = 'none';
+  overlay?.classList.remove('active');
+  toggle?.classList.remove('open');
+  header?.classList.remove('menu-open');
+  requestAnimationFrame(() => {
+    if (overlay) overlay.style.transition = '';
+  });
+})();
+
 // Mini terrain for inner page header
 const canvas = document.getElementById('mini-terrain');
 let renderer, camera;  // Expose for menu resize
