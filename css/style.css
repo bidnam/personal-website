@@ -2158,6 +2158,18 @@ body.page {
   .accordion-header {
     font-size: 1.15rem;
   }
+
+  .accordion-description {
+    font-size: 0.95rem;
+  }
+
+  .accordion-categories .category-pill {
+    font-size: 0.65rem;
+  }
+
+  .accordion-skills li {
+    font-size: 0.7rem;
+  }
 }
 
 
