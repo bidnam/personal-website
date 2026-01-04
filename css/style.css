@@ -227,45 +227,41 @@ canvas {
 }
 
 /* Mobile peak navigation arrows */
-.peak-nav {
+.peak-nav-container {
   display: none;
 }
 
 @media (hover: none) and (max-width: 768px) {
-  .peak-nav {
+  .peak-nav-container {
     display: flex;
     position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px;
-    height: 72px;
-    background: rgba(248, 246, 241, 0.7);
+    bottom: 5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 0.5rem;
+    z-index: 25;
+  }
+
+  .peak-nav {
+    display: flex;
+    width: 48px;
+    height: 48px;
+    background: rgba(248, 246, 241, 0.85);
     border: 1px solid rgba(122, 122, 122, 0.2);
+    border-radius: 50%;
     font-family: 'Instrument Serif', Georgia, serif;
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     color: var(--text-muted);
     align-items: center;
     justify-content: center;
-    z-index: 25;
     cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
   }
 
   .peak-nav:active {
-    background: rgba(248, 246, 241, 0.9);
+    background: rgba(248, 246, 241, 1);
     color: var(--accent);
-  }
-
-  .peak-nav-prev {
-    left: 0;
-    border-left: none;
-    border-radius: 0 6px 6px 0;
-  }
-
-  .peak-nav-next {
-    right: 0;
-    border-right: none;
-    border-radius: 6px 0 0 6px;
+    transform: scale(0.95);
   }
 }
 
@@ -472,10 +468,24 @@ canvas {
   }
 }
 
-/* Hide info panel on very small screens */
+/* Smaller info panel on very small screens */
 @media (max-width: 380px) {
-  .info-panel {
-    display: none;
+  .info-panel.open {
+    right: 200px;
+  }
+
+  .info-panel-tab {
+    font-size: 0.55rem;
+    padding: 0.5rem 0.25rem;
+  }
+
+  .info-panel-content {
+    width: 200px;
+    padding: 1rem;
+  }
+
+  .info-panel-content p {
+    font-size: 0.85rem;
   }
 }
 

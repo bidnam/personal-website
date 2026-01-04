@@ -30,7 +30,7 @@ function updateCameraTargetForViewport() {
   targetCameraZ = 13.0 + (7.5 - 13.0) * t; // 13.0 → 7.5
 
   // Push terrain down on smaller screens to make room for header
-  targetTerrainOffsetY = -1.5 + (0 - (-1.5)) * t;  // -1.5 → 0 (more offset on mobile)
+  targetTerrainOffsetY = -2.0 + (0 - (-2.0)) * t;  // -2.0 → 0 (more offset on mobile)
 }
 
 updateCameraTargetForViewport();
@@ -334,12 +334,16 @@ let initialPhase = true;
 const initialAutoRotateSpeed = -0.002;
 const normalAutoRotateSpeed = -0.0006;
 
+// Track manual peak selection via arrows (prevents hover clearing)
+let manualPeakSelection = false;
+
 function onDragStart(clientX, clientY) {
   isDragging = true;
   dragStart = { x: clientX, y: clientY };
   dragRotationStart = { x: baseRotation.x, y: baseRotation.y };
   document.body.classList.add('dragging');
   lastInteractionTime = Date.now();
+  manualPeakSelection = false;  // Clear manual selection when dragging
 }
 
 function onDragMove(clientX, clientY) {
@@ -403,6 +407,7 @@ prevBtn?.addEventListener('click', (e) => {
   } else {
     mobilePeakIndex = (mobilePeakIndex - 1 + peakNames.length) % peakNames.length;
   }
+  manualPeakSelection = true;
   setHoveredPeak(peakNames[mobilePeakIndex]);
   lastInteractionTime = Date.now();
   initialPhase = false;
@@ -411,6 +416,7 @@ prevBtn?.addEventListener('click', (e) => {
 nextBtn?.addEventListener('click', (e) => {
   e.stopPropagation();
   mobilePeakIndex = (mobilePeakIndex + 1) % peakNames.length;
+  manualPeakSelection = true;
   setHoveredPeak(peakNames[mobilePeakIndex]);
   lastInteractionTime = Date.now();
   initialPhase = false;
@@ -495,7 +501,8 @@ function updateLabelPositions() {
 }
 
 function checkPeakHover() {
-  if (isDragging || !introComplete || !hasMouseMoved) return;
+  // Skip hover check on touch devices with manual peak selection
+  if (isDragging || !introComplete || !hasMouseMoved || manualPeakSelection) return;
 
   // Note: mouse.y needs to be negated for Three.js coordinate system
   raycaster.setFromCamera({ x: mouse.x, y: -mouse.y }, camera);
