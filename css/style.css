@@ -198,12 +198,12 @@ canvas {
 }
 
 .peak-label.active {
-  color: var(--accent-warm);
+  color: var(--bg-primary);
   font-size: 1.3rem;
-  text-shadow:
-    0 1px 3px rgba(248, 246, 241, 1),
-    0 0 12px rgba(248, 246, 241, 0.9),
-    0 0 20px rgba(248, 246, 241, 0.7);
+  background: var(--accent-warm);
+  padding: 0.25rem 0.6rem;
+  border-radius: 3px;
+  text-shadow: none;
 }
 
 .hint {
@@ -316,7 +316,8 @@ canvas {
 /* Responsive: Mobile */
 @media (max-width: 480px) {
   .header {
-    top: 3%;
+    top: env(safe-area-inset-top, 1rem);
+    padding-top: 1rem;
     left: 50%;
     transform: translateX(-50%);
     max-width: 90%;
@@ -450,36 +451,34 @@ canvas {
 
 @media (max-width: 480px) {
   .info-panel {
-    top: auto;
-    bottom: 3.5rem;
-    right: 50%;
-    transform: translateX(50%);
+    top: 50%;
+    right: 0;
+    bottom: auto;
+    transform: translateY(-50%);
   }
 
   .info-panel.open {
-    right: 50%;
-    bottom: 3.5rem;
+    right: 240px;
   }
 
   .info-panel-tab {
-    writing-mode: horizontal-tb;
+    writing-mode: vertical-rl;
     text-orientation: mixed;
-    padding: 0.5rem 1rem;
-    border-radius: 4px 4px 0 0;
-    font-size: 0.75rem;
+    font-size: 0.6rem;
+    padding: 0.75rem 0.25rem;
+    border-radius: 4px 0 0 4px;
   }
 
   .info-panel-content {
-    left: 50%;
-    top: auto;
-    bottom: 100%;
-    transform: translateX(-50%);
-    width: 90vw;
-    max-width: 320px;
-    padding: 1.25rem;
-    border-radius: 4px 4px 0 0;
+    left: 100%;
+    top: 50%;
+    bottom: auto;
+    transform: translateY(-50%);
+    width: 240px;
+    padding: 1rem;
+    border-radius: 4px 0 0 4px;
     border: 1px solid var(--text-muted);
-    border-bottom: none;
+    border-right: none;
   }
 
   .info-panel-content p {
