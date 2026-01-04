@@ -734,7 +734,7 @@ body.page {
   align-items: center;
 }
 
-.menu-overlay.active {
+.menu-ready .menu-overlay.active {
   opacity: 1;
   visibility: visible;
 }

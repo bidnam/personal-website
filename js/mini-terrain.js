@@ -7,6 +7,8 @@
   overlay?.classList.remove('active');
   toggle?.classList.remove('open');
   header?.classList.remove('menu-open');
+  // Add menu-ready class - menu CSS requires this to show
+  document.body.classList.add('menu-ready');
   requestAnimationFrame(() => {
     if (overlay) overlay.style.transition = '';
   });
@@ -161,17 +163,21 @@ document.querySelectorAll('.overlay-link').forEach(link => {
 // Close menu before page is cached (so back button shows closed menu)
 window.addEventListener('pagehide', () => {
   closeMenu();
+  // Remove menu-ready so cached page won't flash menu
+  document.body.classList.remove('menu-ready');
 });
 
 // Close menu instantly when page restored from bfcache (no transition flash)
 window.addEventListener('pageshow', (event) => {
-  if (event.persisted && menuOverlay?.classList.contains('active')) {
+  if (event.persisted) {
     // Disable transition for instant close
-    menuOverlay.style.transition = 'none';
+    if (menuOverlay) menuOverlay.style.transition = 'none';
     closeMenu();
+    // Re-add menu-ready so menu can work again
+    document.body.classList.add('menu-ready');
     // Re-enable transition after a frame
     requestAnimationFrame(() => {
-      menuOverlay.style.transition = '';
+      if (menuOverlay) menuOverlay.style.transition = '';
     });
   }
 });
