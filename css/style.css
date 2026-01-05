@@ -230,11 +230,16 @@ canvas {
   }
 }
 
-/* Hide hints on mobile */
+/* Hints on mobile */
 @media (max-width: 480px) {
-  .hint-desktop,
-  .hint-mobile {
+  .hint-desktop {
     display: none;
+  }
+
+  .hint-mobile {
+    display: block;
+    bottom: 3.5rem;
+    z-index: 40;
   }
 }
 
@@ -263,8 +268,10 @@ canvas {
     border-radius: 50%;
     font-family: 'Instrument Serif', Georgia, serif;
     font-size: 1.5rem;
+    line-height: 1;
     color: var(--text-muted);
     align-items: center;
+    touch-action: manipulation;
     justify-content: center;
     cursor: pointer;
     transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
@@ -368,11 +375,11 @@ canvas {
   }
 
   .peak-label {
-    font-size: 0.85rem;
+    font-size: 0.95rem;
   }
 
   .peak-label.active {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 }
 
@@ -509,7 +516,7 @@ canvas {
     border-radius: 4px 4px 0 0;
     border: 1px solid var(--text-muted);
     border-bottom: none;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     background: var(--bg-primary);
     width: auto;
     transition: background 0.35s cubic-bezier(0.4, 0, 0.2, 1),
