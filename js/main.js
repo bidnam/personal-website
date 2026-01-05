@@ -490,9 +490,10 @@ function updateLabelPositions() {
     const lineEl = peakLines[name];
     if (!labelEl) return;
 
-    // Label positioned so line is ~40px
+    // Label positioned with responsive line length
     const labelHeight = 28;
-    const lineLength = 40;
+    const isMobile = window.innerWidth <= 480;
+    const lineLength = isMobile ? 24 : 40;
     const labelY = peakY - lineLength - labelHeight;
 
     // Line connects bottom of label to peak

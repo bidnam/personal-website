@@ -280,8 +280,16 @@ canvas {
   .peak-label {
     pointer-events: auto;
     cursor: pointer;
-    padding: 0.75rem 1rem;
-    margin: -0.75rem -1rem;
+  }
+
+  /* Use pseudo-element for larger tap target without affecting centering */
+  .peak-label::before {
+    content: '';
+    position: absolute;
+    top: -0.75rem;
+    left: -1rem;
+    right: -1rem;
+    bottom: -0.75rem;
   }
 }
 
