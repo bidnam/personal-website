@@ -230,6 +230,12 @@ canvas {
   }
 }
 
+/* Fallback for mobile browsers that don't support hover: none */
+@media (max-width: 480px) {
+  .hint-desktop { display: none; }
+  .hint-mobile { display: block; white-space: nowrap; }
+}
+
 /* Mobile peak navigation arrows */
 .peak-nav-container {
   display: none;
@@ -274,6 +280,8 @@ canvas {
   .peak-label {
     pointer-events: auto;
     cursor: pointer;
+    padding: 0.75rem 1rem;
+    margin: -0.75rem -1rem;
   }
 }
 
@@ -454,6 +462,10 @@ canvas {
 }
 
 @media (max-width: 480px) {
+  .info-panel {
+    right: 0;
+  }
+
   .info-panel.open {
     right: 260px;
   }
