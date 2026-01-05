@@ -233,7 +233,15 @@ canvas {
 /* Fallback for mobile browsers that don't support hover: none */
 @media (max-width: 480px) {
   .hint-desktop { display: none; }
-  .hint-mobile { display: block; white-space: nowrap; }
+  .hint-mobile {
+    display: block;
+    white-space: nowrap;
+  }
+
+  .hint {
+    bottom: 3.5rem;  /* Between footer (~2rem) and arrows (5rem) */
+    z-index: 15;     /* Above footer's z-index: 10 */
+  }
 }
 
 /* Mobile peak navigation arrows */
