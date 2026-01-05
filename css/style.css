@@ -2289,6 +2289,7 @@ body.page {
 }
 
 .about-page .lede {
+  font-size: 1.75rem;
   opacity: 0;
   transform: translateY(8px);
   animation: fadeSlideUpSubtle 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
