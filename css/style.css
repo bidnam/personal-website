@@ -238,6 +238,7 @@ canvas {
 
   .hint-mobile {
     display: block;
+    position: fixed;
     bottom: 3.5rem;
     z-index: 40;
   }
