@@ -472,10 +472,6 @@ canvas {
 @media (max-width: 480px) {
   .info-panel {
     right: 0;
-    width: -webkit-max-content;  /* Safari fallback */
-    width: -moz-max-content;     /* Firefox fallback */
-    width: max-content;          /* Modern browsers */
-    white-space: nowrap;         /* Keep label on one line */
   }
 
   .info-panel.open {
