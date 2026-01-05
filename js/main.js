@@ -410,13 +410,10 @@ function rotateToPeak(peakName) {
   baseRotation.y = targetRotationY;
 }
 
+// Left arrow → rotate counter-clockwise (increment through peaks)
 prevBtn?.addEventListener('click', (e) => {
   e.stopPropagation();
-  if (mobilePeakIndex === -1) {
-    mobilePeakIndex = peakNames.length - 1;  // Start at last
-  } else {
-    mobilePeakIndex = (mobilePeakIndex - 1 + peakNames.length) % peakNames.length;
-  }
+  mobilePeakIndex = (mobilePeakIndex + 1) % peakNames.length;
   manualPeakSelection = true;
   const selectedPeak = peakNames[mobilePeakIndex];
   setHoveredPeak(selectedPeak);
@@ -425,9 +422,14 @@ prevBtn?.addEventListener('click', (e) => {
   initialPhase = false;
 });
 
+// Right arrow → rotate clockwise (decrement through peaks)
 nextBtn?.addEventListener('click', (e) => {
   e.stopPropagation();
-  mobilePeakIndex = (mobilePeakIndex + 1) % peakNames.length;
+  if (mobilePeakIndex === -1) {
+    mobilePeakIndex = peakNames.length - 1;  // Start at last
+  } else {
+    mobilePeakIndex = (mobilePeakIndex - 1 + peakNames.length) % peakNames.length;
+  }
   manualPeakSelection = true;
   const selectedPeak = peakNames[mobilePeakIndex];
   setHoveredPeak(selectedPeak);
