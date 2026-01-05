@@ -200,7 +200,7 @@ canvas {
 .peak-label.active {
   color: var(--bg-primary);
   font-size: 1.3rem;
-  background: var(--accent-warm);
+  background: rgba(184, 149, 107, 0.85);
   padding: 0.25rem 0.6rem;
   border-radius: 3px;
   text-shadow: none;
@@ -230,17 +230,11 @@ canvas {
   }
 }
 
-/* Fallback for mobile browsers that don't support hover: none */
+/* Hide hints on mobile */
 @media (max-width: 480px) {
-  .hint-desktop { display: none; }
+  .hint-desktop,
   .hint-mobile {
-    display: block;
-    white-space: nowrap;
-  }
-
-  .hint {
-    bottom: 3.5rem;  /* Between footer (~2rem) and arrows (5rem) */
-    z-index: 15;     /* Above footer's z-index: 10 */
+    display: none;
   }
 }
 
@@ -345,18 +339,18 @@ canvas {
     top: 2.5rem;
     left: 50%;
     transform: translateX(-50%);
-    max-width: 90%;
+    max-width: 95%;
     text-align: center;
   }
 
   .name {
-    font-size: 0.75rem;
+    font-size: 1rem;
     margin-bottom: 0.5rem;
   }
 
   .headline {
-    font-size: 1.1rem;
-    line-height: 1.4;
+    font-size: 1.4rem;
+    line-height: 1.35;
   }
 
   .nav-labels {
