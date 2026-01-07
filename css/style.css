@@ -15,6 +15,10 @@
   --text-muted: #7A7A7A;
 }
 
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
 body {
   font-family: 'SF Pro Text', system-ui, sans-serif;
   background: var(--bg-primary);
@@ -22,6 +26,9 @@ body {
   min-height: 100vh;
   overflow: hidden;
   cursor: grab;
+  opacity: 0;
+  animation: fadeIn 0.3s ease-in forwards;
+  animation-delay: 0.1s;
 }
 
 body.dragging {
