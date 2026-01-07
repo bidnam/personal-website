@@ -667,6 +667,19 @@ body.page {
   margin-bottom: 0;
 }
 
+.about-text a {
+  color: var(--text-secondary);
+  text-decoration: underline dotted;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 2px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.about-text a:hover {
+  color: var(--accent-warm);
+  text-decoration-color: var(--accent-warm);
+}
+
 /* Text hover trigger */
 .hover-trigger {
   cursor: pointer;

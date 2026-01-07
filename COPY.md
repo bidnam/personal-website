@@ -26,7 +26,19 @@ Your starting position is dictated by your current customers, constraints, and a
 
 **Lede:** Hi, I'm Bidnam.
 
-**Body:** [Content from about.html body section]
+**Body:**
+
+I've led brand positioning for major AI players, value creation strategies for PE-backed portfolio companies, and marketing transformation programs for the Fortune 100. At the core of all of it is the relentless pursuit of winning strategy in complex landscapes. And building the frameworks, tools, and systems that make ambition operational.
+
+My multi-disciplinary background helps me connect patterns and find solutions that span traditional domains and functions. As a copywriter, I helped develop award-winning campaigns for Nike while honing an ability to connect story to strategy. An MBA sharpened my business acumen and analytical rigor. Consulting across B2B tech, consumer goods, healthcare, retail, and financial services has taught me how to think flexibly and build iteratively.
+
+Alongside that journey, I also coached high school lacrosse, turning an under-funded team that had never had a winning season into state champions. It's where I learned strategy without shared belief is just a playbook. Belief without strategy is just hope. Even with teenage boys.
+
+The contexts are always changing, but the approach has remained consistent: ask the right questions, gather the right people, and build what matters together.
+
+What drives me is the challenge of exceeding expectations. Not because I believe in myself, but because I believe in people. I'm not chasing my best work, but *ours*. Let's do big things together.
+
+Currently, I'm a Global Partner at Ogilvy Consulting, leading brand and business transformation for enterprise clients. Before that, I was consulting hire #2 at COLLINS, helping it earn AdAge's Business Transformation Agency of the Year.
 
 ---
 
