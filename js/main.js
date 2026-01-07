@@ -332,7 +332,7 @@ const dragSensitivityY = isTouchDevice ? 0.005 : 0.003;
 // Initial faster auto-rotate (slows after first interaction)
 let initialPhase = true;
 const initialAutoRotateSpeed = -0.002;
-const normalAutoRotateSpeed = -0.0006;
+const normalAutoRotateSpeed = isTouchDevice ? -0.0012 : -0.0006;  // Faster on mobile
 
 // Track manual peak selection via arrows (prevents hover clearing)
 let manualPeakSelection = false;
