@@ -76,7 +76,7 @@ body.dragging {
 
 .name {
   font-family: 'Instrument Serif', Georgia, serif;
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   font-weight: 400;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -319,7 +319,7 @@ canvas {
   }
 
   .name {
-    font-size: 0.8rem;
+    font-size: 1.1rem;
   }
 
   .headline {
@@ -359,7 +359,7 @@ canvas {
   }
 
   .name {
-    font-size: 1.3rem;
+    font-size: 1rem;
     margin-bottom: 0.5rem;
   }
 
