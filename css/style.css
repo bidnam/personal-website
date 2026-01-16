@@ -94,6 +94,10 @@ body.dragging {
   overflow: hidden;
 }
 
+.mobile-break {
+  display: none;
+}
+
 /* Splitting.js word animation */
 .name .word,
 .headline .word {
@@ -366,6 +370,10 @@ canvas {
   .headline {
     font-size: 1.2rem;
     line-height: 1.4;
+  }
+
+  .mobile-break {
+    display: block;
   }
 
   /* Hide footer on homepage mobile */
