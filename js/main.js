@@ -76,41 +76,82 @@ const smallPeaks = [
 const allPeaks = [...Object.values(mainPeaks), ...smallPeaks];
 const peakNames = ['about', 'work', 'explorations', 'contact'];
 
+// Competitor peaks — ambient small peaks that rise/fall over time
+const competitorSeeds = [
+  { x: -0.9, z: 0.9,  baseH: 0.18, maxH: 0.55, phase: 0.0, radius: 0.26 },
+  { x:  0.8, z: -1.7, baseH: 0.12, maxH: 0.45, phase: 1.3, radius: 0.24 },
+  { x:  2.0, z: 1.4,  baseH: 0.08, maxH: 0.42, phase: 2.1, radius: 0.22 },
+  { x: -2.0, z: 1.2,  baseH: 0.15, maxH: 0.50, phase: 3.4, radius: 0.24 }
+];
+
 // Create terrain with very low segments for chunky angular facets
 const terrainSize = 5.0;
-const segments = 11;  // Chunky Firewatch-style triangles
+const segments = 32;  // Bumped from 11 for smoother dynamic effects
 const geometry = new THREE.PlaneGeometry(terrainSize, terrainSize, segments, segments);
 geometry.rotateX(-Math.PI / 2);
 
 const positions = geometry.attributes.position.array;
 
 // Add vertex jitter to break uniform grid pattern for authentic low-poly look
-const jitterAmount = 0.18;
+const jitterAmount = 0.08;
 const halfSize = terrainSize / 2;
 const edgeThreshold = halfSize * 0.85;
+// Preserve base (x,z) after jitter so we can recompute heights each frame
+const baseXZ = new Float32Array(positions.length / 3 * 2);
 for (let i = 0; i < positions.length; i += 3) {
   const x = positions[i];
   const z = positions[i + 2];
-  // Skip edge vertices to maintain clean terrain boundary
   if (Math.abs(x) < edgeThreshold && Math.abs(z) < edgeThreshold) {
-    positions[i] += (Math.random() - 0.5) * jitterAmount;     // X jitter
-    positions[i + 2] += (Math.random() - 0.5) * jitterAmount; // Z jitter
+    positions[i] += (Math.random() - 0.5) * jitterAmount;
+    positions[i + 2] += (Math.random() - 0.5) * jitterAmount;
   }
+  baseXZ[(i/3)*2]     = positions[i];
+  baseXZ[(i/3)*2 + 1] = positions[i + 2];
 }
 
-// Square pyramid peak - Chebyshev distance for flat-faced geometry
-function mountainPeak(x, z, peak) {
+function mountainPeak(x, z, peak, heightOverride) {
   const dx = x - peak.x;
   const dz = z - peak.z;
-  const dist = Math.max(Math.abs(dx), Math.abs(dz));  // Square base
+  const dist = Math.max(Math.abs(dx), Math.abs(dz));
   const radius = peak.radius;
-
   if (dist > radius) return 0;
-
-  // Linear falloff creates sharp pyramid shape
-  const h = peak.height * (1 - dist / radius);
-
+  const h = (heightOverride ?? peak.height) * (1 - dist / radius);
   return Math.max(0, h);
+}
+
+// Hover ripple state
+const ripple = { active: false, x: 0, z: 0, radius: 0, fade: 0, startTime: 0 };
+
+// Combined height function (living terrain + competitors + ripple)
+function dynamicHeight(x, z, t) {
+  let h = baseNoise(x, z);
+  h += valley(x, z);
+  Object.entries(mainPeaks).forEach(([name, peak]) => {
+    const phase = peak.x * 1.3 + peak.z * 0.7;
+    const peakH = peak.height + Math.sin(t * 0.4 + phase) * 0.08;
+    h += mountainPeak(x, z, peak, peakH);
+  });
+  smallPeaks.forEach(p => { h += mountainPeak(x, z, p); });
+  h += ridgeline(x, z, mainPeaks.work, mainPeaks.about, 0.12);
+  h += ridgeline(x, z, mainPeaks.work, mainPeaks.explorations, 0.1);
+  h += ridgeline(x, z, mainPeaks.work, mainPeaks.contact, 0.08);
+  for (let i = 0; i < competitorSeeds.length; i++) {
+    const c = competitorSeeds[i];
+    const osc = 0.5 + 0.5 * Math.sin(t * 0.25 + c.phase);
+    const pH = c.baseH + (c.maxH - c.baseH) * osc;
+    h += mountainPeak(x, z, c, pH);
+  }
+  if (ripple.active) {
+    const dx = x - ripple.x, dz = z - ripple.z;
+    const d = Math.sqrt(dx*dx + dz*dz);
+    const ringWidth = 0.45;
+    const dist = Math.abs(d - ripple.radius);
+    if (dist < ringWidth) {
+      const fall = 1 - (dist / ringWidth);
+      h += Math.cos((dist / ringWidth) * Math.PI * 0.5) * 0.32 * fall * ripple.fade;
+    }
+  }
+  return h;
 }
 
 // Ridgeline connecting two peaks
@@ -211,7 +252,13 @@ const terrainMaterial = new THREE.ShaderMaterial({
     uColorAccent: { value: new THREE.Color(0xC17F59) },   // Terracotta for hover
     uMinHeight: { value: -0.3 },
     uMaxHeight: { value: 1.8 },
-    uHoveredPeak: { value: new THREE.Vector3(999, 999, 999) }
+    uHoveredPeak: { value: new THREE.Vector3(999, 999, 999) },
+    uLightDir: { value: new THREE.Vector3(0.5, 1.0, 0.3).normalize() },
+    uColorFog: { value: new THREE.Color(0xF8F6F1) },
+    uFog: { value: 0.0 },
+    uFogHeight: { value: 0.8 },
+    uFogDensity: { value: 1.3 },
+    uTime: { value: 0.0 }
   },
   vertexShader: `
     varying vec3 vPosition;
@@ -234,6 +281,12 @@ const terrainMaterial = new THREE.ShaderMaterial({
     uniform float uMinHeight;
     uniform float uMaxHeight;
     uniform vec3 uHoveredPeak;
+    uniform vec3 uLightDir;
+    uniform vec3 uColorFog;
+    uniform float uFog;
+    uniform float uFogHeight;
+    uniform float uFogDensity;
+    uniform float uTime;
 
     varying vec3 vPosition;
     varying vec3 vNormal;
@@ -270,7 +323,7 @@ const terrainMaterial = new THREE.ShaderMaterial({
       baseColor = baseColor * (1.0 - grain * 0.06);
 
       // Clean flat shading lighting
-      vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
+      vec3 lightDir = normalize(uLightDir);
       float diffuse = max(dot(vNormal, lightDir), 0.0);
       float ambient = 0.55;
       float lighting = ambient + diffuse * 0.45;
@@ -279,8 +332,17 @@ const terrainMaterial = new THREE.ShaderMaterial({
       float distToHover = length(vPosition.xz - uHoveredPeak.xz);
       float glow = smoothstep(0.6, 0.0, distToHover) * 0.7;
       vec3 glowColor = mix(baseColor, uColorAccent, glow);
+      vec3 finalColor = glowColor * lighting;
 
-      gl_FragColor = vec4(glowColor * lighting, 1.0);
+      // Valley fog — low altitudes drift into dense cream mist
+      if (uFog > 0.0) {
+        float fogBand = 1.0 - smoothstep(-0.3, uFogHeight, vHeight);
+        float drift = sin(vPosition.x * 1.3 + uTime * 0.3) * 0.5 + 0.5;
+        float fogAmount = fogBand * uFog * (0.7 + 0.3 * drift);
+        finalColor = mix(finalColor, uColorFog, clamp(fogAmount * uFogDensity, 0.0, 0.95));
+      }
+
+      gl_FragColor = vec4(finalColor, 1.0);
     }
   `,
   side: THREE.DoubleSide,
@@ -564,10 +626,20 @@ function checkPeakHover() {
 }
 
 function setHoveredPeak(peakName) {
+  const isNew = hoveredPeak !== peakName;
   hoveredPeak = peakName;
   const peak = peakData[peakName];
 
   terrainMaterial.uniforms.uHoveredPeak.value.set(peak.x, peak.actualHeight, peak.z);
+
+  if (isNew && introComplete) {
+    ripple.active = true;
+    ripple.x = peak.x;
+    ripple.z = peak.z;
+    ripple.radius = 0.15;
+    ripple.fade = 1.0;
+    ripple.startTime = performance.now();
+  }
 
   Object.entries(peakLabels).forEach(([name, el]) => {
     el.classList.toggle('active', name === peakName);
@@ -679,6 +751,41 @@ function animate() {
     if (introProgress >= 1) {
       introComplete = true;
     }
+  } else {
+    // Post-intro dynamic effects
+    if (ripple.active) {
+      const dt = (performance.now() - ripple.startTime) / 1000;
+      ripple.radius = 0.15 + dt * 0.75;
+      ripple.fade = Math.max(0, 1 - dt / 2.2);
+      if (ripple.fade <= 0) ripple.active = false;
+    }
+
+    const pos = geometry.attributes.position.array;
+    for (let i = 0, j = 0; i < pos.length; i += 3, j += 2) {
+      const x = baseXZ[j], z = baseXZ[j + 1];
+      pos[i] = x; pos[i + 2] = z;
+      pos[i + 1] = dynamicHeight(x, z, time);
+    }
+    geometry.attributes.position.needsUpdate = true;
+    geometry.computeVertexNormals();
+
+    Object.entries(mainPeaks).forEach(([name, peak]) => {
+      peakData[name].actualHeight = dynamicHeight(peak.x, peak.z, time);
+    });
+
+    // Moving light — slow overhead arc
+    const angle = time * 0.18;
+    const lx = Math.cos(angle) * 0.7;
+    const lz = Math.sin(angle) * 0.3;
+    const ly = 0.9;
+    terrainMaterial.uniforms.uLightDir.value.set(lx, ly, lz).normalize();
+    directionalLight.position.set(lx * 6, ly * 8, lz * 6);
+
+    // Soft valley fog (target driven by tweak)
+    const curFog = terrainMaterial.uniforms.uFog.value;
+    const target = (window.fogSettings && typeof window.fogSettings.strength === 'number') ? window.fogSettings.strength : 0;
+    terrainMaterial.uniforms.uFog.value = curFog + (target - curFog) * 0.04;
+    terrainMaterial.uniforms.uTime.value = time;
   }
 
   const timeSinceInteraction = Date.now() - lastInteractionTime;
@@ -784,3 +891,62 @@ window.addEventListener('pageshow', (event) => {
     window.location.reload();
   }
 });
+
+// ----- Tweaks panel (fog sliders) -----
+window.fogSettings = { ...(window.TWEAK_DEFAULTS || { fog_strength: 0, fog_height: 0.4, fog_density: 0.7 }) };
+// Normalize key names
+window.fogSettings = {
+  strength: window.fogSettings.fog_strength,
+  height:   window.fogSettings.fog_height,
+  density:  window.fogSettings.fog_density
+};
+
+function applyFogSettings() {
+  terrainMaterial.uniforms.uFogHeight.value = window.fogSettings.height;
+  terrainMaterial.uniforms.uFogDensity.value = window.fogSettings.density;
+  // strength is applied each frame via animate loop target
+}
+applyFogSettings();
+
+function hydrateTweakUI() {
+  document.querySelectorAll('.tweak-row input[type="range"]').forEach(input => {
+    const key = input.dataset.key;
+    const defaults = window.TWEAK_DEFAULTS || {};
+    const initial = defaults[key];
+    if (initial != null) input.value = initial;
+    const label = document.querySelector(`[data-val="${key}"]`);
+    if (label) label.textContent = Number(input.value).toFixed(2);
+
+    input.addEventListener('input', () => {
+      const v = parseFloat(input.value);
+      if (label) label.textContent = v.toFixed(2);
+      if (key === 'fog_strength') window.fogSettings.strength = v;
+      if (key === 'fog_height')   window.fogSettings.height   = v;
+      if (key === 'fog_density')  window.fogSettings.density  = v;
+      applyFogSettings();
+      // Persist
+      try {
+        window.parent.postMessage({
+          type: '__edit_mode_set_keys',
+          edits: {
+            fog_strength: window.fogSettings.strength,
+            fog_height:   window.fogSettings.height,
+            fog_density:  window.fogSettings.density
+          }
+        }, '*');
+      } catch (e) {}
+    });
+  });
+}
+hydrateTweakUI();
+
+// Edit-mode protocol
+window.addEventListener('message', (e) => {
+  const d = e.data;
+  if (!d || !d.type) return;
+  const panel = document.getElementById('tweaks-panel');
+  if (!panel) return;
+  if (d.type === '__activate_edit_mode')   panel.classList.add('visible');
+  if (d.type === '__deactivate_edit_mode') panel.classList.remove('visible');
+});
+try { window.parent.postMessage({ type: '__edit_mode_available' }, '*'); } catch (e) {}

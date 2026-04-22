@@ -26,12 +26,26 @@ bidnam-website/
 
 ## Key Features
 
-- **4 interactive peaks**: About, Work, Writing, Contact
-- **Drag to rotate** terrain
-- **Hover/click peaks** to navigate (navigation not yet wired up)
-- **Arrow key navigation** between peaks
-- **Auto-rotate** when idle
-- **Low-poly aesthetic** with Firewatch-style chunky triangles
+- **4 interactive peaks**: About, Work, Explorations, Contact
+- **Drag to rotate** terrain; **arrow keys** cycle peaks; **auto-rotate** when idle
+- **Hover/click peaks** to navigate (fully wired)
+- **Living terrain**: main peaks breathe, 4 ambient "competitor peaks" rise and fall on independent phases, overhead light slowly arcs
+- **Hover ripples**: hovering a new peak emits a radial pulse that decays over ~1.3s
+- **Valley fog**: elevation-based shader fog with time-based drift; tuned via `uFog`/`uFogHeight`/`uFogDensity` uniforms
+- **Mesh**: 32-segment plane with reduced jitter (0.08) for smooth dynamic motion — no longer pure low-poly, but still faceted
+
+## Edit Mode (dev-only tweaks panel)
+
+The homepage includes a fog-tuning panel hidden behind a postMessage protocol:
+
+- Page posts `{ type: '__edit_mode_available' }` to its parent on load.
+- Parent sends `{ type: '__activate_edit_mode' }` → panel becomes visible.
+- Parent sends `{ type: '__deactivate_edit_mode' }` → panel hides.
+- On slider change, page posts `{ type: '__edit_mode_set_keys', edits: {...} }` so the parent can persist values.
+
+Defaults live in `index.html` inside a block delimited by `/*EDITMODE-BEGIN*/` and `/*EDITMODE-END*/` — any editor/agent can locate and rewrite just that block.
+
+Because the panel is gated on a parent postMessage, public visitors never see it. Only meaningful when the page is embedded in an editor iframe.
 
 ## Content Resources
 

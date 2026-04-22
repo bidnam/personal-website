@@ -91,6 +91,79 @@
     Splitting();
   </script>
 
+  <!-- Editable defaults — persist with host -->
+  <script>
+    window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "fog_strength": 0.55,
+      "fog_height": 0.45,
+      "fog_density": 0.8
+    }/*EDITMODE-END*/;
+  </script>
+
+  <!-- Tweaks panel -->
+  <div class="tweaks-panel" id="tweaks-panel">
+    <div class="tweaks-head">
+      <span class="tweaks-title">Tweaks</span>
+      <span class="tweaks-sub">Valley fog</span>
+    </div>
+    <label class="tweak-row">
+      <span class="tweak-name">Strength</span>
+      <input type="range" min="0" max="1.5" step="0.05" data-key="fog_strength">
+      <span class="tweak-val" data-val="fog_strength"></span>
+    </label>
+    <label class="tweak-row">
+      <span class="tweak-name">Height reach</span>
+      <input type="range" min="0.2" max="1.5" step="0.05" data-key="fog_height">
+      <span class="tweak-val" data-val="fog_height"></span>
+    </label>
+    <label class="tweak-row">
+      <span class="tweak-name">Density</span>
+      <input type="range" min="0.3" max="2.5" step="0.05" data-key="fog_density">
+      <span class="tweak-val" data-val="fog_density"></span>
+    </label>
+  </div>
+
+  <style>
+    .tweaks-panel {
+      position: fixed; right: 24px; bottom: 24px; z-index: 100;
+      width: 280px; padding: 16px 18px 14px;
+      background: rgba(248,246,241,0.96);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(26,26,26,0.12);
+      border-radius: 2px;
+      box-shadow: 0 8px 40px rgba(26,26,26,0.08);
+      font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+      font-size: 11px; color: #1A1A1A;
+      display: none;
+    }
+    .tweaks-panel.visible { display: block; }
+    .tweaks-head { margin-bottom: 12px; }
+    .tweaks-title {
+      font-family: 'Instrument Serif', serif; font-style: italic;
+      font-size: 16px; margin-right: 8px;
+    }
+    .tweaks-sub {
+      font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #7A7A7A;
+    }
+    .tweak-row {
+      display: grid; grid-template-columns: 90px 1fr 40px;
+      align-items: center; gap: 8px;
+      padding: 6px 0; border-top: 1px dashed rgba(26,26,26,0.12);
+    }
+    .tweak-name {
+      font-size: 10px; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #4A4A4A;
+    }
+    .tweak-row input[type="range"] {
+      width: 100%; accent-color: #4A5D4A; cursor: pointer;
+    }
+    .tweak-val {
+      font-size: 10px; color: #1A1A1A; text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+
   <!-- Main Script -->
   <script src="js/main.js"></script>
 </body>
