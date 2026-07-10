@@ -147,7 +147,7 @@ function summitCrest(x, z, peak, h) {
   const ct = Math.cos(theta), st = Math.sin(theta);
   const u = dx * ct + dz * st;    // along the crest
   const v = -dx * st + dz * ct;   // across it
-  const rA = peak.radius * 1.6, rC = peak.radius * 0.55;
+  const rA = peak.radius * 1.5, rC = peak.radius * 0.8;
   const d = Math.sqrt((u * u) / (rA * rA) + (v * v) / (rC * rC));
   const t = 1.0 - d;
   if (t <= 0) return 0;
@@ -284,6 +284,7 @@ let labelsRevealed = false;
 // Dev override: ?sun=14.25 (hours).
 const sunParams = new URLSearchParams(window.location.search);
 const devSunHours = sunParams.has('sun') ? parseFloat(sunParams.get('sun')) : null;
+const devRotation = sunParams.has('rot') ? parseFloat(sunParams.get('rot')) : null;
 
 const sunState = {
   dirWorld: new THREE.Vector3(0.5, 1.0, 0.3).normalize(),
@@ -429,7 +430,7 @@ const terrainMaterial = new THREE.ShaderMaterial({
       float ct = cos(theta), st = sin(theta);
       float u = dv.x * ct + dv.y * st;
       float v = -dv.x * st + dv.y * ct;
-      float rA = radius * 1.6, rC = radius * 0.55;
+      float rA = radius * 1.5, rC = radius * 0.8;
       float d = sqrt((u * u) / (rA * rA) + (v * v) / (rC * rC));
       float t = 1.0 - d;
       if (t <= 0.0) return 0.0;
@@ -616,7 +617,7 @@ Object.entries(mainPeaks).forEach(([name, peak]) => {
 
 // Interaction state
 const mouse = { x: 0, y: 0 };
-const baseRotation = { x: 0, y: -0.35 };  // Start rotated 20° clockwise
+const baseRotation = { x: 0, y: devRotation ?? -0.35 };  // Start rotated 20° clockwise (?rot= overrides)
 const mouseOffset = { x: 0, y: 0 };       // Subtle parallax from mouse
 const currentRotation = { x: 0, y: 0 };
 let isDragging = false;
