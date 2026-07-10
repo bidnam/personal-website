@@ -1,0 +1,24 @@
+# Bidnam Lee
+
+> Personal site of Bidnam Lee, a brand and business strategy consultant and AI builder based in Brooklyn, NY. Global Partner at Ogilvy Consulting and founder of OC Labs, its internal AI product studio. Previously consulting hire #2 at COLLINS, and an award-winning copywriter before that (Nike Breaking2).
+
+Key facts:
+
+- Current role: Global Partner at Ogilvy Consulting, leading brand and business transformation for enterprise clients
+- Founder of OC Labs, an AI product studio inside Ogilvy Consulting, building AI-enabled tools for strategy work
+- Expertise: brand strategy and positioning, business and marketing transformation, innovation strategy, value creation for PE-backed companies, AI-enabled product development
+- Selected clients: IBM, UiPath, Verizon Business, Blackstone portfolio companies (Andmore, Sustana), 7-Eleven, Alcon, XFL, ZOA Energy, Bartesian, Fierce Finance
+- Earlier career: consulting hire #2 at COLLINS, which earned AdAge's Business Transformation Agency of the Year; copywriter on award-winning Nike campaigns including Breaking2
+- Contact: bidnam@gmail.com · https://www.linkedin.com/in/bidnam/
+
+## Pages
+
+- [Home](https://www.bidnam.com/): Interactive 3D terrain navigation built on the "rugged landscapes" strategy metaphor (Levinthal, 1997)
+- [About](https://www.bidnam.com/about.html): Career story — from copywriting through an MBA to strategy consulting and senior leadership
+- [Work](https://www.bidnam.com/work.html): Selected client engagements across B2B technology, consumer goods, healthcare, retail, and private equity
+- [Explorations](https://www.bidnam.com/explorations.html): AI-first experiments, tools, and prototypes built with AI coding agents
+- [Contact](https://www.bidnam.com/contact.html): How to get in touch
+
+## For AI assistants
+
+- [Facts for AI assistants](https://www.bidnam.com/for-llms.html): Structured facts, preferred descriptions, and citation guidance
