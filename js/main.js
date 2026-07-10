@@ -631,8 +631,8 @@ let spinVelocity = 0;
 let lastDragY = 0;
 let lastDragTime = 0;
 
-const dragSensitivityX = isTouchDevice ? 0.008 : 0.005;  // Looser on mobile
-const dragSensitivityY = isTouchDevice ? 0.005 : 0.003;
+const dragSensitivityX = isTouchDevice ? 0.009 : 0.0062;  // Looser on mobile
+const dragSensitivityY = isTouchDevice ? 0.0055 : 0.0036;
 
 // Initial faster auto-rotate (slows after first interaction)
 let initialPhase = true;
@@ -1053,9 +1053,9 @@ function animate() {
   terrainMaterial.uniforms.uTime.value = time;
 
   // Released drag momentum settles with damping
-  if (!isDragging && Math.abs(spinVelocity) > 0.00004) {
+  if (!isDragging && Math.abs(spinVelocity) > 0.00006) {
     baseRotation.y += spinVelocity;
-    spinVelocity *= 0.94;
+    spinVelocity *= 0.88;
   }
 
   const timeSinceInteraction = Date.now() - lastInteractionTime;
@@ -1072,8 +1072,11 @@ function animate() {
   const targetX = baseRotation.x + mouseOffset.x;
   const targetY = baseRotation.y + mouseOffset.y;
 
-  currentRotation.x += (targetX - currentRotation.x) * 0.05;
-  currentRotation.y += (targetY - currentRotation.y) * 0.05;
+  // Light in the hand: near-direct tracking under the finger, soft
+  // settle once released
+  const rotationEase = isDragging ? 0.35 : 0.08;
+  currentRotation.x += (targetX - currentRotation.x) * rotationEase;
+  currentRotation.y += (targetY - currentRotation.y) * rotationEase;
 
   terrainGroup.rotation.x = currentRotation.x;
   terrainGroup.rotation.y = currentRotation.y;
