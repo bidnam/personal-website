@@ -33,7 +33,8 @@ bidnam-website/
 - **Raymarched soft self-shadows** against the analytic heightfield (12 steps desktop / 6 touch, dithered start). The GLSL `terrainH()` mirrors JS `dynamicHeight()` — change both together.
 - **Living terrain**: main peaks breathe, 4 ambient "competitor peaks" rise and fall on independent phases
 - **Weather fog**: fBM-shaped valley mist with wind drift and minutes-scale weather states; inherits sun warmth; tuned via `uFog`/`uFogHeight`/`uFogDensity` uniforms
-- **Mesh**: 96-segment plane (48 on touch devices), jitter scaled to density; slope-based rock tint on steep faces
+- **Mesh**: 96-segment plane (48 on touch devices), jitter scaled to density; slope-based rock tint on steep faces; flat shading via screen-space-derivative face normals (no vertex normals used)
+- **Landform is a RANGE SYSTEM, not placed cones**: uplift masses around each anchor scale ridged/folded noise (creases = colliding slopes/arêtes); summits are elongated crest segments on per-peak azimuths; connecting ridgelines join the masses. JS `dynamicHeight()` and GLSL `terrainH()` implement it in lockstep — change both together. Dev overrides: `?sun=14.5` (hours), `?rot=0.85` (radians).
 - **Reduced motion respected**: time freezes at a good pose, no auto-rotate/dolly; interaction still works
 
 ## Edit Mode (dev-only tweaks panel)
