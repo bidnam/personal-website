@@ -76,9 +76,9 @@ body.dragging {
 }
 
 .name {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
   font-size: 1.25rem;
-  font-weight: 400;
+  font-weight: 500;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -87,9 +87,9 @@ body.dragging {
 }
 
 .headline {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
   font-size: 1.5rem;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.35;
   color: var(--text-primary);
   overflow: hidden;
@@ -117,7 +117,7 @@ body.dragging {
 }
 
 .headline em {
-  font-style: italic;
+  font-style: normal;
   color: var(--accent);
   /* Splitting.js drops the whitespace text node before the em */
   margin-left: 0.22em;
@@ -190,7 +190,8 @@ canvas {
 
 .peak-label {
   position: absolute;
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: 1.1rem;
   font-style: italic;
   color: var(--text-primary);
@@ -280,7 +281,8 @@ canvas {
     background: rgba(248, 246, 241, 0.85);
     border: 1px solid rgba(122, 122, 122, 0.2);
     border-radius: 50%;
-    font-family: 'Literata', Georgia, serif;
+    font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
     font-size: 1.5rem;
     line-height: 1;
     color: var(--text-muted);
@@ -433,7 +435,8 @@ canvas {
   background: var(--bg-primary);
   border: 1px solid var(--text-muted);
   border-radius: 4px 0 0 4px;
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: 0.95rem;
   font-style: italic;
   color: var(--text-primary);
@@ -495,7 +498,8 @@ canvas {
 }
 
 .info-panel-content p {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: 1rem;
   line-height: 1.6;
   color: var(--text-primary);
@@ -621,7 +625,8 @@ body.page {
 }
 
 .back-link {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: 0.9rem;
   color: var(--text-secondary);
   text-decoration: none;
@@ -654,17 +659,17 @@ body.page {
 }
 
 .page-content h1 {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
   font-size: 2rem;
-  font-weight: 400;
+  font-weight: 500;
   color: var(--text-primary);
   margin: 0;
 }
 
 .lede {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: 1.2rem;
-  font-style: italic;
   line-height: 1.5;
   color: var(--accent);
   margin: 0 0 2.5rem;
@@ -814,7 +819,8 @@ body.page {
 }
 
 .inner-name {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: 1.1rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -876,7 +882,8 @@ body.page {
 .nav-panel-link {
   display: block;
   position: relative;
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: 1.1rem;
   color: var(--text-secondary);
   text-decoration: none;
@@ -945,7 +952,8 @@ body.page {
 }
 
 .menu-overlay .overlay-link {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: clamp(2.5rem, 8vw, 5rem);
   color: var(--bg-primary);
   text-decoration: none;
@@ -1132,9 +1140,9 @@ body.page {
 }
 
 .work-header h1 {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
   font-size: 2rem;
-  font-weight: 400;
+  font-weight: 500;
   color: var(--text-primary);
   margin: 0;
 }
@@ -1235,9 +1243,9 @@ body.page {
 }
 
 .row-client {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
   font-size: 1.35rem;
-  font-weight: 400;
+  font-weight: 500;
   color: var(--text-primary);
   margin: 0;
 }
@@ -1260,9 +1268,9 @@ body.page {
 }
 
 .row-description {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: 1.05rem;
-  font-style: italic;
   color: var(--text-secondary);
   line-height: 1.6;
   margin: 0 0 1.25rem;
@@ -1405,15 +1413,16 @@ body.page {
 }
 
 .writing-title {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
   font-size: 1.35rem;
-  font-weight: 400;
+  font-weight: 500;
   color: var(--text-primary);
   margin: 0.3rem 0 0.5rem;
 }
 
 .writing-excerpt {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: 1rem;
   font-style: italic;
   color: var(--text-secondary);
@@ -1502,15 +1511,16 @@ body.page {
 }
 
 .contact-value {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: 1.15rem;
   color: var(--text-primary);
 }
 
 .contact-note {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: 1rem;
-  font-style: italic;
   color: var(--text-secondary);
   line-height: 1.6;
 }
@@ -1545,9 +1555,9 @@ body.page {
 }
 
 .explorations-header h1 {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
   font-size: 2rem;
-  font-weight: 400;
+  font-weight: 500;
   color: var(--text-primary);
   margin: 0;
 }
@@ -1606,7 +1616,8 @@ body.page {
 }
 
 .log-title {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: 1.15rem;
   color: var(--text-primary);
   display: block;
@@ -1642,9 +1653,9 @@ body.page {
 }
 
 .log-status {
-  font-family: 'Literata', Georgia, serif;
-  font-style: italic;
-  font-size: 0.8rem;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
+  font-size: 0.88rem;
   text-transform: lowercase;
   letter-spacing: 0.02em;
   text-align: right;
@@ -1827,9 +1838,9 @@ body.page {
 
 .log-table .col-question {
   width: 50%;
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: 1rem;
-  font-style: italic;
   color: var(--text-secondary);
   line-height: 1.45;
   padding-right: 1rem;
@@ -2202,9 +2213,9 @@ body.page {
 }
 
 .accordion-header {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
   font-size: clamp(2.5rem, 6vw, 3.5rem);
-  font-weight: 400;
+  font-weight: 500;
   color: var(--text-primary);
   cursor: pointer;
   padding: 0.75rem 0;
@@ -2299,9 +2310,9 @@ body.page {
 }
 
 .accordion-description {
-  font-family: 'Literata', Georgia, serif;
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 500;
   font-size: 1.05rem;
-  font-style: italic;
   color: var(--text-secondary);
   line-height: 1.7;
   margin-bottom: 1.5rem;
