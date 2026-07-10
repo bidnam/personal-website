@@ -1,3 +1,8 @@
+import * as THREE from 'three';
+
+// Keep legacy (r128-era) color behavior for the custom shader
+THREE.ColorManagement.enabled = false;
+
 // Immediately close menu on page load (prevents flash on back button)
 (function() {
   const overlay = document.querySelector('.menu-overlay');

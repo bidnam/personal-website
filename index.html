@@ -153,7 +153,7 @@
   </div>
 
   <!-- Three.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js" } }</script>
 
   <!-- Splitting.js for text animation -->
   <script src="https://unpkg.com/splitting/dist/splitting.min.js"></script>
@@ -235,6 +235,6 @@
   </style>
 
   <!-- Main Script -->
-  <script src="js/main.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

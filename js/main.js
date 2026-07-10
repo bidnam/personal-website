@@ -1,5 +1,22 @@
 // Bidnam Lee - Strategic Terrain Navigation
 // Three.js 3D terrain with interactive peaks
+//
+// The scene runs on a real sun: its position follows the visitor's local
+// time (dev override: ?sun=13.5), light warms as it drops toward the
+// horizon, peaks self-shadow via an analytic raymarch, and fog behaves
+// like weather. The GLSL height function below mirrors dynamicHeight() —
+// if one changes, change both.
+
+import * as THREE from 'three';
+
+// Keep legacy (r128-era) color behavior: hex colors pass to the custom
+// shader untransformed.
+THREE.ColorManagement.enabled = false;
+
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Touch device detection (also drives quality tier)
+const isTouchDevice = 'ontouchstart' in window;
 
 const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
@@ -40,14 +57,6 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 container.appendChild(renderer.domElement);
 
-// Lighting for flat shading
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-scene.add(ambientLight);
-
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-directionalLight.position.set(3, 8, 5);
-scene.add(directionalLight);
-
 // Simplex-like noise function for organic variation
 function noise2D(x, z, seed = 0) {
   const n = Math.sin(x * 1.7 + seed) * Math.cos(z * 2.3 + seed * 0.7) +
@@ -84,16 +93,17 @@ const competitorSeeds = [
   { x: -2.0, z: 1.2,  baseH: 0.15, maxH: 0.50, phase: 3.4, radius: 0.24 }
 ];
 
-// Create terrain with very low segments for chunky angular facets
+// Terrain mesh — denser grid for finer silhouettes and shadow detail,
+// still flat-shaded facets. Touch devices get a lighter grid.
 const terrainSize = 5.0;
-const segments = 32;  // Bumped from 11 for smoother dynamic effects
+const segments = isTouchDevice ? 48 : 96;
 const geometry = new THREE.PlaneGeometry(terrainSize, terrainSize, segments, segments);
 geometry.rotateX(-Math.PI / 2);
 
 const positions = geometry.attributes.position.array;
 
 // Add vertex jitter to break uniform grid pattern for authentic low-poly look
-const jitterAmount = 0.08;
+const jitterAmount = 0.08 * (32 / segments);  // scale with density
 const halfSize = terrainSize / 2;
 const edgeThreshold = halfSize * 0.85;
 // Preserve base (x,z) after jitter so we can recompute heights each frame
@@ -234,13 +244,63 @@ geometry.attributes.position.needsUpdate = true;
 
 // Intro animation state
 let introProgress = 0;
-const introDuration = 1.8;  // seconds
+const introDuration = prefersReducedMotion ? 0.001 : 1.8;  // seconds
 const introStartTime = performance.now();
 let introComplete = false;
 let labelsRevealed = false;
 
 // Compute normals for geometric look
 geometry.computeVertexNormals();
+
+// ----- The sun -----
+// Anchored to the visitor's local time, clamped to a dawn–dusk band so
+// night visitors get long evening light rather than darkness.
+// Dev override: ?sun=14.25 (hours).
+const sunParams = new URLSearchParams(window.location.search);
+const devSunHours = sunParams.has('sun') ? parseFloat(sunParams.get('sun')) : null;
+
+const sunState = {
+  dirWorld: new THREE.Vector3(0.5, 1.0, 0.3).normalize(),
+  dirLocal: new THREE.Vector3(0.5, 1.0, 0.3).normalize(),
+  color: new THREE.Color(1, 1, 1),
+  warmth: 0
+};
+
+const SUN_WARM = new THREE.Color(1.0, 0.80, 0.60);   // low-angle gold
+const SUN_NEUTRAL = new THREE.Color(1.0, 0.985, 0.955);
+
+function updateSun(t) {
+  let hours;
+  if (devSunHours != null) {
+    hours = devSunHours;
+  } else {
+    const now = new Date();
+    hours = now.getHours() + now.getMinutes() / 60;
+  }
+
+  // Map 5:30–18:30 onto the arc; clamp so night reads as late dusk
+  const dayT = Math.max(0.05, Math.min(0.95, (hours - 5.5) / 13.0));
+
+  // Azimuth sweeps east → west across the back of the scene, with a slow
+  // drift so the light never fully stills
+  const azimuth = (dayT - 0.5) * Math.PI * 1.15 + Math.sin(t * 0.03) * 0.1;
+
+  // Elevation: low at the band edges, capped below ~47° at midday so
+  // the relief never flattens under an overhead sun
+  const elevAngle = 0.14 + Math.sin(dayT * Math.PI) * 0.68;  // radians
+
+  const y = Math.sin(elevAngle);
+  const r = Math.cos(elevAngle);
+  const x = Math.sin(azimuth) * r;
+  const z = Math.cos(azimuth) * r * 0.5 + 0.4;  // bias toward camera side
+
+  sunState.dirWorld.set(x, y, z).normalize();
+
+  // Warmth rises as the sun drops
+  sunState.warmth = 1.0 - THREE.MathUtils.smoothstep(elevAngle, 0.32, 0.78);
+  sunState.color.copy(SUN_NEUTRAL).lerp(SUN_WARM, sunState.warmth);
+}
+updateSun(0);
 
 // Green (peaks) to Yellow (valleys) gradient
 const terrainMaterial = new THREE.ShaderMaterial({
@@ -253,21 +313,27 @@ const terrainMaterial = new THREE.ShaderMaterial({
     uMinHeight: { value: -0.3 },
     uMaxHeight: { value: 1.8 },
     uHoveredPeak: { value: new THREE.Vector3(999, 999, 999) },
-    uLightDir: { value: new THREE.Vector3(0.5, 1.0, 0.3).normalize() },
+    uSunDir: { value: new THREE.Vector3(0.5, 1.0, 0.3).normalize() },  // terrain-local
+    uSunColor: { value: new THREE.Color(1, 1, 1) },
+    uSunWarmth: { value: 0.0 },
     uColorFog: { value: new THREE.Color(0xF8F6F1) },
     uFog: { value: 0.0 },
     uFogHeight: { value: 0.8 },
     uFogDensity: { value: 1.3 },
-    uTime: { value: 0.0 }
+    uTime: { value: 0.0 },
+    uIntro: { value: 0.0 },
+    uGlintStart: { value: -10.0 },
+    uRipple: { value: new THREE.Vector4(0, 0, 0, 0) },   // x, z, radius, fade
+    uShadowSteps: { value: isTouchDevice ? 6 : 12 }
   },
   vertexShader: `
     varying vec3 vPosition;
-    varying vec3 vNormal;
+    varying vec3 vLocalNormal;
     varying float vHeight;
 
     void main() {
       vPosition = position;
-      vNormal = normalize(normalMatrix * normal);
+      vLocalNormal = normal;  // terrain-local space; sun dir arrives in same space
       vHeight = position.y;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
@@ -281,15 +347,21 @@ const terrainMaterial = new THREE.ShaderMaterial({
     uniform float uMinHeight;
     uniform float uMaxHeight;
     uniform vec3 uHoveredPeak;
-    uniform vec3 uLightDir;
+    uniform vec3 uSunDir;
+    uniform vec3 uSunColor;
+    uniform float uSunWarmth;
     uniform vec3 uColorFog;
     uniform float uFog;
     uniform float uFogHeight;
     uniform float uFogDensity;
     uniform float uTime;
+    uniform float uIntro;
+    uniform float uGlintStart;
+    uniform vec4 uRipple;
+    uniform float uShadowSteps;
 
     varying vec3 vPosition;
-    varying vec3 vNormal;
+    varying vec3 vLocalNormal;
     varying float vHeight;
 
     // Hash function for procedural grain
@@ -297,21 +369,125 @@ const terrainMaterial = new THREE.ShaderMaterial({
       return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
     }
 
+    // Value noise + fbm for weather fog
+    float vnoise(vec2 p) {
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      vec2 u = f * f * (3.0 - 2.0 * f);
+      float a = hash(i);
+      float b = hash(i + vec2(1.0, 0.0));
+      float c = hash(i + vec2(0.0, 1.0));
+      float d = hash(i + vec2(1.0, 1.0));
+      return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+    }
+    float fbm(vec2 p) {
+      float v = 0.0;
+      v += vnoise(p) * 0.5;
+      v += vnoise(p * 2.03) * 0.25;
+      v += vnoise(p * 4.11) * 0.125;
+      return v / 0.875;
+    }
+
+    // ---- Analytic terrain height (mirrors dynamicHeight in JS) ----
+    float peakH(vec2 p, vec2 c, float radius, float height) {
+      vec2 d = abs(p - c);
+      float dist = max(d.x, d.y);
+      return max(0.0, height * (1.0 - dist / radius)) * step(dist, radius);
+    }
+
+    float ridgeH(vec2 p, vec2 a, vec2 b, float h) {
+      vec2 ab = b - a;
+      float len2 = dot(ab, ab);
+      float t = clamp(dot(p - a, ab) / len2, 0.0, 1.0);
+      vec2 proj = a + t * ab;
+      float d = length(p - proj);
+      float w = 0.25;
+      return h * exp(-(d * d) / (2.0 * w * w)) * sin(t * 3.14159265);
+    }
+
+    float terrainH(vec2 p) {
+      float x = p.x, z = p.y;
+      float h = 0.0;
+      // baseNoise
+      h += sin(x * 0.9) * cos(z * 0.8) * 0.22;
+      h += sin(x * 1.8 + 0.5) * cos(z * 1.5) * 0.14;
+      h += sin(x * 2.5 - 0.3) * cos(z * 2.2 + 0.7) * 0.1;
+      h += sin(x * 4.0 + 1.2) * cos(z * 3.8 - 0.5) * 0.06;
+      h += sin(x * 5.5 - 0.8) * cos(z * 5.2 + 1.1) * 0.04;
+      // valley
+      h -= max(0.0, -sin(x * 0.9 + 0.3) * cos(z * 0.7) * 0.35);
+      h -= max(0.0, -sin(x * 1.3 - 0.5) * cos(z * 1.1 + 0.4) * 0.25);
+      h -= max(0.0, -cos(x * 0.6 + 0.8) * sin(z * 0.8) * 0.2);
+      h -= max(0.0, -sin(x * 1.8) * cos(z * 1.6) * 0.15);
+      // main peaks (breathing) — phase = x*1.3 + z*0.7
+      h += peakH(p, vec2(-1.5, -1.2), 0.65, 1.4 + sin(uTime * 0.4 + (-1.5*1.3 + -1.2*0.7)) * 0.08);
+      h += peakH(p, vec2( 0.0,  0.0), 0.70, 2.0 + sin(uTime * 0.4) * 0.08);
+      h += peakH(p, vec2( 1.5, -1.0), 0.60, 1.3 + sin(uTime * 0.4 + (1.5*1.3 + -1.0*0.7)) * 0.08);
+      h += peakH(p, vec2(-1.2,  1.4), 0.55, 1.1 + sin(uTime * 0.4 + (-1.2*1.3 + 1.4*0.7)) * 0.08);
+      // small peaks
+      h += peakH(p, vec2( 1.3,  1.2), 0.35, 0.6);
+      h += peakH(p, vec2(-0.3, -1.6), 0.32, 0.5);
+      h += peakH(p, vec2( 1.7,  0.3), 0.30, 0.45);
+      h += peakH(p, vec2(-1.7, -0.2), 0.28, 0.4);
+      h += peakH(p, vec2( 0.6,  1.6), 0.26, 0.35);
+      // ridgelines to Work
+      h += ridgeH(p, vec2(0.0, 0.0), vec2(-1.5, -1.2), 0.12);
+      h += ridgeH(p, vec2(0.0, 0.0), vec2( 1.5, -1.0), 0.10);
+      h += ridgeH(p, vec2(0.0, 0.0), vec2(-1.2,  1.4), 0.08);
+      // competitor peaks (rise/fall)
+      h += peakH(p, vec2(-0.9,  0.9), 0.26, 0.18 + 0.37 * (0.5 + 0.5 * sin(uTime * 0.25)));
+      h += peakH(p, vec2( 0.8, -1.7), 0.24, 0.12 + 0.33 * (0.5 + 0.5 * sin(uTime * 0.25 + 1.3)));
+      h += peakH(p, vec2( 2.0,  1.4), 0.22, 0.08 + 0.34 * (0.5 + 0.5 * sin(uTime * 0.25 + 2.1)));
+      h += peakH(p, vec2(-2.0,  1.2), 0.24, 0.15 + 0.35 * (0.5 + 0.5 * sin(uTime * 0.25 + 3.4)));
+      // hover ripple
+      if (uRipple.w > 0.0) {
+        float d = length(p - uRipple.xy);
+        float dist = abs(d - uRipple.z);
+        if (dist < 0.45) {
+          float fall = 1.0 - dist / 0.45;
+          h += cos((dist / 0.45) * 1.5707963) * 0.32 * fall * uRipple.w;
+        }
+      }
+      return h * uIntro;
+    }
+
+    // Soft shadow: march from the fragment toward the sun through the
+    // analytic heightfield
+    float sunShadow(vec3 p, vec3 sunDir) {
+      float shadow = 1.0;
+      // Dithered march start breaks step banding into imperceptible noise
+      float t = 0.12 + hash(p.xz * 23.7) * 0.16;
+      const int MAX_STEPS = 16;
+      for (int i = 0; i < MAX_STEPS; i++) {
+        if (float(i) >= uShadowSteps) break;
+        vec3 sample_ = p + sunDir * t;
+        if (sample_.y > 2.4) break;  // above any possible terrain
+        float h = terrainH(sample_.xz);
+        float gap = sample_.y - h;
+        shadow = min(shadow, max(0.0, gap) * 3.5 / t);
+        if (shadow < 0.02) break;
+        t += 0.22;
+      }
+      return clamp(shadow, 0.0, 1.0);
+    }
+
     void main() {
-      // 4-color elevation gradient: yellow -> tan -> sage -> forest
+      // 4-color elevation gradient
       float t = smoothstep(uMinHeight, uMaxHeight, vHeight);
 
       vec3 baseColor;
       if (t < 0.25) {
-        // Pale sage to medium green
         baseColor = mix(uColorLow, uColorLowMid, t / 0.25);
       } else if (t < 0.5) {
-        // Medium green to forest green
         baseColor = mix(uColorLowMid, uColorMid, (t - 0.25) / 0.25);
       } else {
-        // Forest green to deep dark green
         baseColor = mix(uColorMid, uColorHigh, (t - 0.5) / 0.5);
       }
+
+      // Slope tint — steeper faces read slightly rockier
+      float slope = 1.0 - clamp(normalize(vLocalNormal).y, 0.0, 1.0);
+      float rock = smoothstep(0.45, 0.8, slope) * 0.22;
+      baseColor = mix(baseColor, vec3(0.42, 0.45, 0.38), rock);
 
       // Subtle contour lines based on elevation
       float contour = abs(fract(vHeight / 0.2) - 0.5) * 2.0;
@@ -322,24 +498,45 @@ const terrainMaterial = new THREE.ShaderMaterial({
       float grain = hash(vPosition.xz * 12.0);
       baseColor = baseColor * (1.0 - grain * 0.06);
 
-      // Clean flat shading lighting
-      vec3 lightDir = normalize(uLightDir);
-      float diffuse = max(dot(vNormal, lightDir), 0.0);
-      float ambient = 0.55;
-      float lighting = ambient + diffuse * 0.45;
+      // ---- Sunlight: local-space diffuse + raymarched soft shadow ----
+      vec3 n = normalize(vLocalNormal);
+      vec3 sunDir = normalize(uSunDir);
+      float diffuse = max(dot(n, sunDir), 0.0);
 
-      // Hover glow
+      float shadow = 1.0;
+      if (diffuse > 0.01 && uIntro > 0.85) {
+        shadow = sunShadow(vec3(vPosition.x, vHeight + 0.02, vPosition.z), sunDir);
+      }
+      float lit = diffuse * shadow;
+
+      // Alpenglow: low warm sun catches the high ground
+      float alpen = uSunWarmth * smoothstep(uMaxHeight * 0.45, uMaxHeight, vHeight) * lit;
+      baseColor = mix(baseColor, vec3(0.98, 0.62, 0.48), alpen * 0.28);
+
+      // Ambient cools slightly inside shadow (sky light, no sun)
+      vec3 ambientTint = mix(vec3(0.94, 0.97, 1.0), vec3(1.0), shadow * 0.5 + 0.5);
+      vec3 lighting = ambientTint * 0.52 + uSunColor * lit * 0.48;
+
+      // Hover: quiet persistent lift + a light-catch that sweeps once
       float distToHover = length(vPosition.xz - uHoveredPeak.xz);
-      float glow = smoothstep(0.6, 0.0, distToHover) * 0.7;
-      vec3 glowColor = mix(baseColor, uColorAccent, glow);
-      vec3 finalColor = glowColor * lighting;
+      float hoverLift = smoothstep(0.6, 0.0, distToHover) * 0.22;
+      vec3 shaded = mix(baseColor, uColorAccent, hoverLift) * lighting;
 
-      // Valley fog — low altitudes drift into dense cream mist
+      float glintT = clamp((uTime - uGlintStart) / 1.4, 0.0, 1.0);
+      float sweep = smoothstep(0.2, 0.0, abs(distToHover - glintT * 1.1)) * (1.0 - glintT);
+      shaded += uSunColor * sweep * 0.22;
+
+      vec3 finalColor = shaded;
+
+      // Valley fog — weather-shaped mist pooling in the low ground
       if (uFog > 0.0) {
         float fogBand = 1.0 - smoothstep(-0.3, uFogHeight, vHeight);
-        float drift = sin(vPosition.x * 1.3 + uTime * 0.3) * 0.5 + 0.5;
-        float fogAmount = fogBand * uFog * (0.7 + 0.3 * drift);
-        finalColor = mix(finalColor, uColorFog, clamp(fogAmount * uFogDensity, 0.0, 0.95));
+        vec2 wind = vec2(uTime * 0.045, uTime * 0.018);
+        float shape = fbm(vPosition.xz * 0.9 + wind);
+        float weather = 0.62 + 0.38 * sin(uTime * 0.016 + fbm(vPosition.xz * 0.13) * 3.0);
+        float fogAmount = fogBand * uFog * mix(0.35, 1.3, shape) * weather;
+        vec3 fogCol = mix(uColorFog, vec3(1.0, 0.87, 0.72), uSunWarmth * 0.22);
+        finalColor = mix(finalColor, fogCol, clamp(fogAmount * uFogDensity, 0.0, 0.95));
       }
 
       gl_FragColor = vec4(finalColor, 1.0);
@@ -386,8 +583,11 @@ let dragRotationStart = { x: 0, y: 0 };
 let lastInteractionTime = Date.now();
 let selectedPeakIndex = -1;
 
-// Touch device detection
-const isTouchDevice = 'ontouchstart' in window;
+// Drag inertia — released momentum settles like mass
+let spinVelocity = 0;
+let lastDragY = 0;
+let lastDragTime = 0;
+
 const dragSensitivityX = isTouchDevice ? 0.008 : 0.005;  // Looser on mobile
 const dragSensitivityY = isTouchDevice ? 0.005 : 0.003;
 
@@ -406,6 +606,9 @@ function onDragStart(clientX, clientY) {
   document.body.classList.add('dragging');
   lastInteractionTime = Date.now();
   manualPeakSelection = false;  // Clear manual selection when dragging
+  spinVelocity = 0;
+  lastDragY = baseRotation.y;
+  lastDragTime = performance.now();
 }
 
 function onDragMove(clientX, clientY) {
@@ -426,12 +629,22 @@ function onDragMove(clientX, clientY) {
     baseRotation.x = Math.max(-0.35, Math.min(0.35, verticalRotation));
     lastInteractionTime = Date.now();
     initialPhase = false;  // End initial fast rotation after first interaction
+
+    // Track angular velocity for release inertia
+    const nowT = performance.now();
+    const dt = Math.max(1, nowT - lastDragTime);
+    const v = (baseRotation.y - lastDragY) / dt * 16.7;  // per-frame velocity
+    spinVelocity = spinVelocity * 0.7 + v * 0.3;
+    lastDragY = baseRotation.y;
+    lastDragTime = nowT;
   }
 }
 
 function onDragEnd() {
   isDragging = false;
   document.body.classList.remove('dragging');
+  // Momentum carries only from a genuinely recent movement
+  if (performance.now() - lastDragTime > 120) spinVelocity = 0;
 }
 
 document.addEventListener('mousedown', (e) => onDragStart(e.clientX, e.clientY));
@@ -639,6 +852,8 @@ function setHoveredPeak(peakName) {
     ripple.radius = 0.15;
     ripple.fade = 1.0;
     ripple.startTime = performance.now();
+    // Light-catch sweep across the hovered peak
+    terrainMaterial.uniforms.uGlintStart.value = time;
   }
 
   Object.entries(peakLabels).forEach(([name, el]) => {
@@ -719,13 +934,14 @@ function onPeakClick(e) {
 
 document.addEventListener('click', onPeakClick);
 
-let time = 0;
+let time = prefersReducedMotion ? 3.0 : 0;  // frozen at a good breathing pose
 const idleThreshold = 3000;
+const invQuat = new THREE.Quaternion();
 
 function animate() {
   requestAnimationFrame(animate);
 
-  time += 0.01;
+  if (!prefersReducedMotion) time += 0.01;
 
   // Intro animation: terrain grows from flat
   if (!introComplete) {
@@ -742,6 +958,7 @@ function animate() {
     }
     geometry.attributes.position.needsUpdate = true;
     geometry.computeVertexNormals();
+    terrainMaterial.uniforms.uIntro.value = eased;
 
     // Show labels at 80%
     if (introProgress >= 0.8 && !labelsRevealed) {
@@ -750,8 +967,9 @@ function animate() {
 
     if (introProgress >= 1) {
       introComplete = true;
+      terrainMaterial.uniforms.uIntro.value = 1.0;
     }
-  } else {
+  } else if (!prefersReducedMotion) {
     // Post-intro dynamic effects
     if (ripple.active) {
       const dt = (performance.now() - ripple.startTime) / 1000;
@@ -759,6 +977,9 @@ function animate() {
       ripple.fade = Math.max(0, 1 - dt / 2.2);
       if (ripple.fade <= 0) ripple.active = false;
     }
+    terrainMaterial.uniforms.uRipple.value.set(
+      ripple.x, ripple.z, ripple.radius, ripple.active ? ripple.fade : 0
+    );
 
     const pos = geometry.attributes.position.array;
     for (let i = 0, j = 0; i < pos.length; i += 3, j += 2) {
@@ -772,26 +993,38 @@ function animate() {
     Object.entries(mainPeaks).forEach(([name, peak]) => {
       peakData[name].actualHeight = dynamicHeight(peak.x, peak.z, time);
     });
+  }
 
-    // Moving light — slow overhead arc
-    const angle = time * 0.18;
-    const lx = Math.cos(angle) * 0.7;
-    const lz = Math.sin(angle) * 0.3;
-    const ly = 0.9;
-    terrainMaterial.uniforms.uLightDir.value.set(lx, ly, lz).normalize();
-    directionalLight.position.set(lx * 6, ly * 8, lz * 6);
+  // The sun: local-time position, warm at low angles. The terrain
+  // rotates under a world-fixed sun, so light and shadows hold their
+  // bearing while you drag.
+  updateSun(time);
+  invQuat.copy(terrainGroup.quaternion).invert();
+  sunState.dirLocal.copy(sunState.dirWorld).applyQuaternion(invQuat);
+  terrainMaterial.uniforms.uSunDir.value.copy(sunState.dirLocal);
+  terrainMaterial.uniforms.uSunColor.value.copy(sunState.color);
+  terrainMaterial.uniforms.uSunWarmth.value = sunState.warmth;
 
-    // Soft valley fog (target driven by tweak)
-    const curFog = terrainMaterial.uniforms.uFog.value;
-    const target = (window.fogSettings && typeof window.fogSettings.strength === 'number') ? window.fogSettings.strength : 0;
-    terrainMaterial.uniforms.uFog.value = curFog + (target - curFog) * 0.04;
-    terrainMaterial.uniforms.uTime.value = time;
+  // Soft valley fog (target driven by tweak)
+  const curFog = terrainMaterial.uniforms.uFog.value;
+  const target = (window.fogSettings && typeof window.fogSettings.strength === 'number') ? window.fogSettings.strength : 0;
+  terrainMaterial.uniforms.uFog.value = curFog + (target - curFog) * 0.04;
+  terrainMaterial.uniforms.uTime.value = time;
+
+  // Released drag momentum settles with damping
+  if (!isDragging && Math.abs(spinVelocity) > 0.00004) {
+    baseRotation.y += spinVelocity;
+    spinVelocity *= 0.94;
   }
 
   const timeSinceInteraction = Date.now() - lastInteractionTime;
-  if (timeSinceInteraction > idleThreshold && !isDragging) {
+  if (!prefersReducedMotion && timeSinceInteraction > idleThreshold && !isDragging) {
+    // Observer's drift, not a turntable: speed swells and eases, and the
+    // viewpoint breathes vertically a little
     const rotateSpeed = initialPhase ? initialAutoRotateSpeed : normalAutoRotateSpeed;
-    baseRotation.y += rotateSpeed;
+    baseRotation.y += rotateSpeed * (0.55 + 0.45 * Math.sin(time * 0.05));
+    const sway = 0.03 * Math.sin(time * 0.04);
+    baseRotation.x += (sway - baseRotation.x) * 0.002;
   }
 
   // Combine base rotation (from drag) with mouse parallax offset
@@ -804,15 +1037,17 @@ function animate() {
   terrainGroup.rotation.x = currentRotation.x;
   terrainGroup.rotation.y = currentRotation.y;
 
-  // Smooth camera position interpolation for responsive sizing
+  // Smooth camera position interpolation, with a slow dolly breath
+  const dolly = prefersReducedMotion ? 0 : Math.sin(time * 0.045) * 0.18;
   camera.position.y += (targetCameraY - camera.position.y) * 0.05;
-  camera.position.z += (targetCameraZ - camera.position.z) * 0.05;
+  camera.position.z += ((targetCameraZ + dolly) - camera.position.z) * 0.05;
 
   // Smooth terrain offset interpolation (pushes terrain down on small screens)
   currentTerrainOffsetY += (targetTerrainOffsetY - currentTerrainOffsetY) * 0.05;
 
   // Combine gentle float animation with responsive offset
-  terrainGroup.position.y = Math.sin(time * 0.4) * 0.06 + currentTerrainOffsetY;
+  const float = prefersReducedMotion ? 0 : Math.sin(time * 0.4) * 0.06;
+  terrainGroup.position.y = float + currentTerrainOffsetY;
 
   updateLabelPositions();
   checkPeakHover();

@@ -309,8 +309,8 @@
   </footer>
 
   <!-- Three.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="js/mini-terrain.js"></script>
+  <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.178.0/build/three.module.js" } }</script>
+  <script type="module" src="js/mini-terrain.js"></script>
   <script src="js/work.js"></script>
 </body>
 </html>

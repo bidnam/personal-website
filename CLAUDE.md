@@ -7,8 +7,8 @@ Personal portfolio website featuring an interactive 3D terrain navigation. Built
 ## Tech Stack
 
 - **HTML/CSS/JS** - Static site, no build tools
-- **Three.js** (CDN) - 3D terrain rendering
-- **Custom GLSL Shaders** - Elevation-based coloring, grain texture, hover effects
+- **Three.js r178** (ES module via importmap, jsdelivr CDN) - 3D terrain rendering. `THREE.ColorManagement.enabled = false` preserves legacy color behavior for the custom shaders.
+- **Custom GLSL Shaders** - Elevation coloring, grain, raymarched sun shadows, weather fog, hover effects
 
 ## File Structure
 
@@ -27,12 +27,14 @@ bidnam-website/
 ## Key Features
 
 - **4 interactive peaks**: About, Work, Explorations, Contact
-- **Drag to rotate** terrain; **arrow keys** cycle peaks; **auto-rotate** when idle
-- **Hover/click peaks** to navigate (fully wired)
-- **Living terrain**: main peaks breathe, 4 ambient "competitor peaks" rise and fall on independent phases, overhead light slowly arcs
-- **Hover ripples**: hovering a new peak emits a radial pulse that decays over ~1.3s
-- **Valley fog**: elevation-based shader fog with time-based drift; tuned via `uFog`/`uFogHeight`/`uFogDensity` uniforms
-- **Mesh**: 32-segment plane with reduced jitter (0.08) for smooth dynamic motion — no longer pure low-poly, but still faceted
+- **Drag to rotate** terrain (with release inertia); **arrow keys** cycle peaks; idle **observer drift** (swelling rotation + camera dolly breath), not a constant turntable
+- **Hover/click peaks** to navigate (fully wired); hover fires a ripple + a light-catch sweep in sun color
+- **The sun follows visitor local time** (clamped to a dawn–dusk band; capped below ~47° so relief never flattens). Low sun goes warm gold with alpenglow on high ground. Dev override: `?sun=14.5` (hours). Sun is world-fixed: dragging rotates terrain (and its shadows) under it.
+- **Raymarched soft self-shadows** against the analytic heightfield (12 steps desktop / 6 touch, dithered start). The GLSL `terrainH()` mirrors JS `dynamicHeight()` — change both together.
+- **Living terrain**: main peaks breathe, 4 ambient "competitor peaks" rise and fall on independent phases
+- **Weather fog**: fBM-shaped valley mist with wind drift and minutes-scale weather states; inherits sun warmth; tuned via `uFog`/`uFogHeight`/`uFogDensity` uniforms
+- **Mesh**: 96-segment plane (48 on touch devices), jitter scaled to density; slope-based rock tint on steep faces
+- **Reduced motion respected**: time freezes at a good pose, no auto-rotate/dolly; interaction still works
 
 ## Edit Mode (dev-only tweaks panel)
 
@@ -79,14 +81,13 @@ Career content lives in a separate repository. Reference these files when buildi
 
 ## Development
 
-Just open `index.html` in a browser. No build step required.
-
-For local server (optional, for testing):
+A local HTTP server is REQUIRED (ES modules don't load over `file://`):
 ```bash
 python3 -m http.server 8000
 # or
 npx serve
 ```
+No build step. Non-JS pages still open directly, but anything using the terrain (homepage, inner-page mini terrain) needs the server.
 
 ## Deployment
 
