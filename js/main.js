@@ -68,7 +68,7 @@ function noise2D(x, z, seed = 0) {
 // Main labeled peaks - Work in center, others distributed around
 const mainPeaks = {
   about: { x: -1.5, z: -1.2, height: 1.4, radius: 0.65 },    // Back-left (larger radius)
-  work: { x: 0.0, z: 0.0, height: 2.0, radius: 0.7 },        // Center (tallest)
+  work: { x: 0.0, z: 0.0, height: 2.15, radius: 0.7 },        // Center (tallest)
   explorations: { x: 1.5, z: -1.0, height: 1.3, radius: 0.6 },    // Back-right
   contact: { x: -1.2, z: 1.4, height: 1.1, radius: 0.55 }    // Front-left
 };
@@ -119,29 +119,39 @@ for (let i = 0; i < positions.length; i += 3) {
   baseXZ[(i/3)*2 + 1] = positions[i + 2];
 }
 
-// Massif profile: round footprint whose radius wanders around the peak
-// (harmonic spurs, seeded per peak) with a concave alpine falloff —
-// steep at the summit, flaring at the base. Mirrored in GLSL peakH().
-function mountainPeak(x, z, peak, heightOverride) {
+// ---- Range construction (mirrored in GLSL terrainH) ----
+// Mountains are a SYSTEM, not placed cones:
+//   1. uplift masses around each anchor (smooth gaussians)
+//   2. ridged relief — folded noise whose creases are colliding slopes —
+//      scaled by uplift, so crags live on the ranges and plains stay calm
+//   3. summits as elongated arête segments: high points ON ridges
+
+// Folded noise: creases along the zero-contours read as arêtes
+function ridgedField(x, z) {
+  const n1 = Math.sin(x * 1.6 + 0.8) * Math.cos(z * 1.3 - 0.4);
+  const n2 = Math.sin(x * 2.9 - 1.2 + z * 0.8) * Math.cos(z * 2.5 + 0.6 - x * 0.5);
+  return 0.6 * Math.pow(1.0 - Math.abs(n1), 1.6)
+       + 0.4 * Math.pow(1.0 - Math.abs(n2), 1.6);
+}
+
+function upliftAt(x, z, cx, cz, R) {
+  const dx = x - cx, dz = z - cz;
+  return Math.exp(-(dx * dx + dz * dz) / (R * R));
+}
+
+// Elongated summit crest along a per-peak azimuth
+function summitCrest(x, z, peak, h) {
   const dx = x - peak.x;
   const dz = z - peak.z;
-  const d = Math.sqrt(dx * dx + dz * dz);
-  if (d > peak.radius * 1.5) return 0;
-  let wander = 1.0;
-  if (d > 1e-4) {
-    const ux = dx / d, uz = dz / d;
-    const seed = peak.x * 3.7 + peak.z * 2.3;
-    const c2 = ux * ux - uz * uz;               // cos 2θ
-    const s2 = 2.0 * ux * uz;                   // sin 2θ
-    const c3 = ux * (ux * ux - 3.0 * uz * uz);  // cos 3θ
-    wander = 1.0
-      + 0.18 * c2 * Math.sin(seed)
-      + 0.16 * s2 * Math.cos(seed * 1.7)
-      + 0.14 * c3 * Math.sin(seed * 2.3);
-  }
-  const t = 1.0 - d / (peak.radius * wander);
+  const theta = peak.x * 3.7 + peak.z * 2.3 + 0.9;
+  const ct = Math.cos(theta), st = Math.sin(theta);
+  const u = dx * ct + dz * st;    // along the crest
+  const v = -dx * st + dz * ct;   // across it
+  const rA = peak.radius * 1.6, rC = peak.radius * 0.55;
+  const d = Math.sqrt((u * u) / (rA * rA) + (v * v) / (rC * rC));
+  const t = 1.0 - d;
   if (t <= 0) return 0;
-  return Math.max(0, (heightOverride ?? peak.height) * Math.pow(t, 1.45));
+  return h * Math.pow(t, 1.35);
 }
 
 // Hover ripple state
@@ -149,23 +159,41 @@ const ripple = { active: false, x: 0, z: 0, radius: 0, fade: 0, startTime: 0 };
 
 // Combined height function (living terrain + competitors + ripple)
 function dynamicHeight(x, z, t) {
-  let h = baseNoise(x, z);
-  h += valley(x, z);
-  Object.entries(mainPeaks).forEach(([name, peak]) => {
-    const phase = peak.x * 1.3 + peak.z * 0.7;
-    const peakH = peak.height + Math.sin(t * 0.4 + phase) * 0.08;
-    h += mountainPeak(x, z, peak, peakH);
-  });
-  smallPeaks.forEach(p => { h += mountainPeak(x, z, p); });
-  h += ridgeline(x, z, mainPeaks.work, mainPeaks.about, 0.12);
-  h += ridgeline(x, z, mainPeaks.work, mainPeaks.explorations, 0.1);
-  h += ridgeline(x, z, mainPeaks.work, mainPeaks.contact, 0.08);
+  let h = baseNoise(x, z) * 0.55;
+  h += valley(x, z) * 0.7;
+
+  // Uplift masses: main anchors, hills, breathing competitors
+  let U = 0;
+  U += 1.00 * upliftAt(x, z, 0.0, 0.0, 1.15);
+  U += 0.72 * upliftAt(x, z, -1.5, -1.2, 1.05);
+  U += 0.66 * upliftAt(x, z, 1.5, -1.0, 1.0);
+  U += 0.56 * upliftAt(x, z, -1.2, 1.4, 0.92);
+  U += 0.30 * upliftAt(x, z, 1.3, 1.2, 0.75);
+  U += 0.25 * upliftAt(x, z, -0.3, -1.6, 0.7);
+  U += 0.22 * upliftAt(x, z, 1.7, 0.3, 0.66);
+  U += 0.20 * upliftAt(x, z, -1.7, -0.2, 0.62);
+  U += 0.17 * upliftAt(x, z, 0.6, 1.6, 0.57);
   for (let i = 0; i < competitorSeeds.length; i++) {
     const c = competitorSeeds[i];
     const osc = 0.5 + 0.5 * Math.sin(t * 0.25 + c.phase);
-    const pH = c.baseH + (c.maxH - c.baseH) * osc;
-    h += mountainPeak(x, z, c, pH);
+    U += (c.baseH + (c.maxH - c.baseH) * osc) * 0.9 * upliftAt(x, z, c.x, c.z, 0.55);
   }
+
+  // Mass + crags: relief scales with uplift
+  h += U * 0.5;
+  h += U * ridgedField(x, z) * 0.62;
+
+  // Summits as arête segments, breathing like before
+  Object.entries(mainPeaks).forEach(([name, peak]) => {
+    const phase = peak.x * 1.3 + peak.z * 0.7;
+    const crestH = peak.height * 0.58 + Math.sin(t * 0.4 + phase) * 0.08;
+    h += summitCrest(x, z, peak, crestH);
+  });
+
+  // Connecting ridgelines — the masses read as one system
+  h += ridgeline(x, z, mainPeaks.work, mainPeaks.about, 0.18);
+  h += ridgeline(x, z, mainPeaks.work, mainPeaks.explorations, 0.15);
+  h += ridgeline(x, z, mainPeaks.work, mainPeaks.contact, 0.12);
   if (ripple.active) {
     const dx = x - ripple.x, dz = z - ripple.z;
     const d = Math.sqrt(dx*dx + dz*dz);
@@ -194,7 +222,7 @@ function ridgeline(x, z, peak1, peak2, ridgeHeight) {
   const distToRidge = Math.sqrt((x - projX) * (x - projX) + (z - projZ) * (z - projZ));
 
   // Ridge profile — falloff perpendicular to the line
-  const ridgeWidth = 0.25;
+  const ridgeWidth = 0.3;
   const ridge = ridgeHeight * Math.exp(-(distToRidge * distToRidge) / (2 * ridgeWidth * ridgeWidth));
 
   // Taper at endpoints
@@ -228,25 +256,9 @@ function valley(x, z) {
   return -v;
 }
 
-// Apply heights
+// Apply heights (same system as the per-frame loop, at t=0)
 for (let i = 0; i < positions.length; i += 3) {
-  const x = positions[i];
-  const z = positions[i + 2];
-
-  let height = baseNoise(x, z);
-  height += valley(x, z);
-
-  // Add all peaks with organic mountain shape
-  allPeaks.forEach(peak => {
-    height += mountainPeak(x, z, peak);
-  });
-
-  // Add ridgelines connecting to central Work peak
-  height += ridgeline(x, z, mainPeaks.work, mainPeaks.about, 0.12);
-  height += ridgeline(x, z, mainPeaks.work, mainPeaks.explorations, 0.1);
-  height += ridgeline(x, z, mainPeaks.work, mainPeaks.contact, 0.08);
-
-  positions[i + 1] = height;
+  positions[i + 1] = dynamicHeight(positions[i], positions[i + 2], 0);
 }
 
 // Store target heights for intro animation, then reset to flat
@@ -400,25 +412,28 @@ const terrainMaterial = new THREE.ShaderMaterial({
     }
 
     // ---- Analytic terrain height (mirrors dynamicHeight in JS) ----
-    float peakH(vec2 p, vec2 c, float radius, float height) {
+    float ridgedF(vec2 p) {
+      float n1 = sin(p.x * 1.6 + 0.8) * cos(p.y * 1.3 - 0.4);
+      float n2 = sin(p.x * 2.9 - 1.2 + p.y * 0.8) * cos(p.y * 2.5 + 0.6 - p.x * 0.5);
+      return 0.6 * pow(1.0 - abs(n1), 1.6) + 0.4 * pow(1.0 - abs(n2), 1.6);
+    }
+
+    float upliftD(vec2 p, vec2 c, float R) {
+      vec2 d = p - c;
+      return exp(-dot(d, d) / (R * R));
+    }
+
+    float crestSeg(vec2 p, vec2 c, float radius, float height) {
       vec2 dv = p - c;
-      float d = length(dv);
-      if (d > radius * 1.5) return 0.0;
-      float wander = 1.0;
-      if (d > 1e-4) {
-        vec2 u = dv / d;
-        float seed = c.x * 3.7 + c.y * 2.3;
-        float c2 = u.x * u.x - u.y * u.y;
-        float s2 = 2.0 * u.x * u.y;
-        float c3 = u.x * (u.x * u.x - 3.0 * u.y * u.y);
-        wander = 1.0
-          + 0.18 * c2 * sin(seed)
-          + 0.16 * s2 * cos(seed * 1.7)
-          + 0.14 * c3 * sin(seed * 2.3);
-      }
-      float t = 1.0 - d / (radius * wander);
+      float theta = c.x * 3.7 + c.y * 2.3 + 0.9;
+      float ct = cos(theta), st = sin(theta);
+      float u = dv.x * ct + dv.y * st;
+      float v = -dv.x * st + dv.y * ct;
+      float rA = radius * 1.6, rC = radius * 0.55;
+      float d = sqrt((u * u) / (rA * rA) + (v * v) / (rC * rC));
+      float t = 1.0 - d;
       if (t <= 0.0) return 0.0;
-      return max(0.0, height * pow(t, 1.45));
+      return height * pow(t, 1.35);
     }
 
     float ridgeH(vec2 p, vec2 a, vec2 b, float h) {
@@ -427,44 +442,50 @@ const terrainMaterial = new THREE.ShaderMaterial({
       float t = clamp(dot(p - a, ab) / len2, 0.0, 1.0);
       vec2 proj = a + t * ab;
       float d = length(p - proj);
-      float w = 0.25;
+      float w = 0.3;
       return h * exp(-(d * d) / (2.0 * w * w)) * sin(t * 3.14159265);
     }
 
     float terrainH(vec2 p) {
       float x = p.x, z = p.y;
       float h = 0.0;
-      // baseNoise
-      h += sin(x * 0.9) * cos(z * 0.8) * 0.22;
-      h += sin(x * 1.8 + 0.5) * cos(z * 1.5) * 0.14;
-      h += sin(x * 2.5 - 0.3) * cos(z * 2.2 + 0.7) * 0.1;
-      h += sin(x * 4.0 + 1.2) * cos(z * 3.8 - 0.5) * 0.06;
-      h += sin(x * 5.5 - 0.8) * cos(z * 5.2 + 1.1) * 0.04;
-      // valley
-      h -= max(0.0, -sin(x * 0.9 + 0.3) * cos(z * 0.7) * 0.35);
-      h -= max(0.0, -sin(x * 1.3 - 0.5) * cos(z * 1.1 + 0.4) * 0.25);
-      h -= max(0.0, -cos(x * 0.6 + 0.8) * sin(z * 0.8) * 0.2);
-      h -= max(0.0, -sin(x * 1.8) * cos(z * 1.6) * 0.15);
-      // main peaks (breathing) — phase = x*1.3 + z*0.7
-      h += peakH(p, vec2(-1.5, -1.2), 0.65, 1.4 + sin(uTime * 0.4 + (-1.5*1.3 + -1.2*0.7)) * 0.08);
-      h += peakH(p, vec2( 0.0,  0.0), 0.70, 2.0 + sin(uTime * 0.4) * 0.08);
-      h += peakH(p, vec2( 1.5, -1.0), 0.60, 1.3 + sin(uTime * 0.4 + (1.5*1.3 + -1.0*0.7)) * 0.08);
-      h += peakH(p, vec2(-1.2,  1.4), 0.55, 1.1 + sin(uTime * 0.4 + (-1.2*1.3 + 1.4*0.7)) * 0.08);
-      // small peaks
-      h += peakH(p, vec2( 1.3,  1.2), 0.35, 0.6);
-      h += peakH(p, vec2(-0.3, -1.6), 0.32, 0.5);
-      h += peakH(p, vec2( 1.7,  0.3), 0.30, 0.45);
-      h += peakH(p, vec2(-1.7, -0.2), 0.28, 0.4);
-      h += peakH(p, vec2( 0.6,  1.6), 0.26, 0.35);
-      // ridgelines to Work
-      h += ridgeH(p, vec2(0.0, 0.0), vec2(-1.5, -1.2), 0.12);
-      h += ridgeH(p, vec2(0.0, 0.0), vec2( 1.5, -1.0), 0.10);
-      h += ridgeH(p, vec2(0.0, 0.0), vec2(-1.2,  1.4), 0.08);
-      // competitor peaks (rise/fall)
-      h += peakH(p, vec2(-0.9,  0.9), 0.26, 0.18 + 0.37 * (0.5 + 0.5 * sin(uTime * 0.25)));
-      h += peakH(p, vec2( 0.8, -1.7), 0.24, 0.12 + 0.33 * (0.5 + 0.5 * sin(uTime * 0.25 + 1.3)));
-      h += peakH(p, vec2( 2.0,  1.4), 0.22, 0.08 + 0.34 * (0.5 + 0.5 * sin(uTime * 0.25 + 2.1)));
-      h += peakH(p, vec2(-2.0,  1.2), 0.24, 0.15 + 0.35 * (0.5 + 0.5 * sin(uTime * 0.25 + 3.4)));
+      // base + valley, toned down so the ranges dominate
+      h += (sin(x * 0.9) * cos(z * 0.8) * 0.22
+          + sin(x * 1.8 + 0.5) * cos(z * 1.5) * 0.14
+          + sin(x * 2.5 - 0.3) * cos(z * 2.2 + 0.7) * 0.1
+          + sin(x * 4.0 + 1.2) * cos(z * 3.8 - 0.5) * 0.06
+          + sin(x * 5.5 - 0.8) * cos(z * 5.2 + 1.1) * 0.04) * 0.55;
+      h -= (max(0.0, -sin(x * 0.9 + 0.3) * cos(z * 0.7) * 0.35)
+          + max(0.0, -sin(x * 1.3 - 0.5) * cos(z * 1.1 + 0.4) * 0.25)
+          + max(0.0, -cos(x * 0.6 + 0.8) * sin(z * 0.8) * 0.2)
+          + max(0.0, -sin(x * 1.8) * cos(z * 1.6) * 0.15)) * 0.7;
+      // uplift masses (main, hills, breathing competitors)
+      float U = 0.0;
+      U += 1.00 * upliftD(p, vec2( 0.0,  0.0), 1.15);
+      U += 0.72 * upliftD(p, vec2(-1.5, -1.2), 1.05);
+      U += 0.66 * upliftD(p, vec2( 1.5, -1.0), 1.00);
+      U += 0.56 * upliftD(p, vec2(-1.2,  1.4), 0.92);
+      U += 0.30 * upliftD(p, vec2( 1.3,  1.2), 0.75);
+      U += 0.25 * upliftD(p, vec2(-0.3, -1.6), 0.70);
+      U += 0.22 * upliftD(p, vec2( 1.7,  0.3), 0.66);
+      U += 0.20 * upliftD(p, vec2(-1.7, -0.2), 0.62);
+      U += 0.17 * upliftD(p, vec2( 0.6,  1.6), 0.57);
+      U += (0.18 + 0.37 * (0.5 + 0.5 * sin(uTime * 0.25)))       * 0.9 * upliftD(p, vec2(-0.9,  0.9), 0.55);
+      U += (0.12 + 0.33 * (0.5 + 0.5 * sin(uTime * 0.25 + 1.3))) * 0.9 * upliftD(p, vec2( 0.8, -1.7), 0.55);
+      U += (0.08 + 0.34 * (0.5 + 0.5 * sin(uTime * 0.25 + 2.1))) * 0.9 * upliftD(p, vec2( 2.0,  1.4), 0.55);
+      U += (0.15 + 0.35 * (0.5 + 0.5 * sin(uTime * 0.25 + 3.4))) * 0.9 * upliftD(p, vec2(-2.0,  1.2), 0.55);
+      // mass + crags: relief scales with uplift
+      h += U * 0.5;
+      h += U * ridgedF(p) * 0.62;
+      // summit crests (breathing) — phase = x*1.3 + z*0.7
+      h += crestSeg(p, vec2(-1.5, -1.2), 0.65, 1.4 * 0.58 + sin(uTime * 0.4 + (-1.5*1.3 + -1.2*0.7)) * 0.08);
+      h += crestSeg(p, vec2( 0.0,  0.0), 0.70, 2.15 * 0.58 + sin(uTime * 0.4) * 0.08);
+      h += crestSeg(p, vec2( 1.5, -1.0), 0.60, 1.3 * 0.58 + sin(uTime * 0.4 + (1.5*1.3 + -1.0*0.7)) * 0.08);
+      h += crestSeg(p, vec2(-1.2,  1.4), 0.55, 1.1 * 0.58 + sin(uTime * 0.4 + (-1.2*1.3 + 1.4*0.7)) * 0.08);
+      // connecting ridgelines
+      h += ridgeH(p, vec2(0.0, 0.0), vec2(-1.5, -1.2), 0.18);
+      h += ridgeH(p, vec2(0.0, 0.0), vec2( 1.5, -1.0), 0.15);
+      h += ridgeH(p, vec2(0.0, 0.0), vec2(-1.2,  1.4), 0.12);
       // hover ripple
       if (uRipple.w > 0.0) {
         float d = length(p - uRipple.xy);
@@ -585,15 +606,7 @@ scene.add(terrainGroup);
 // Calculate actual peak heights (same logic as terrain generation)
 const peakData = {};
 function getHeightAt(x, z) {
-  let height = baseNoise(x, z);
-  height += valley(x, z);
-  allPeaks.forEach(p => {
-    height += mountainPeak(x, z, p);
-  });
-  height += ridgeline(x, z, mainPeaks.work, mainPeaks.about, 0.12);
-  height += ridgeline(x, z, mainPeaks.work, mainPeaks.explorations, 0.1);
-  height += ridgeline(x, z, mainPeaks.work, mainPeaks.contact, 0.08);
-  return height;
+  return dynamicHeight(x, z, 0);
 }
 
 Object.entries(mainPeaks).forEach(([name, peak]) => {
