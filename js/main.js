@@ -68,7 +68,7 @@ function noise2D(x, z, seed = 0) {
 // Main labeled peaks - Work in center, others distributed around
 const mainPeaks = {
   about: { x: -1.5, z: -1.2, height: 1.4, radius: 0.65 },    // Back-left (larger radius)
-  work: { x: 0.0, z: 0.0, height: 2.15, radius: 0.7 },        // Center (tallest)
+  work: { x: 0.0, z: 0.0, height: 2.4, radius: 0.88 },        // Center (tallest)
   explorations: { x: 1.5, z: -1.0, height: 1.3, radius: 0.6 },    // Back-right
   contact: { x: -1.2, z: 1.4, height: 1.1, radius: 0.55 }    // Front-left
 };
@@ -479,7 +479,7 @@ const terrainMaterial = new THREE.ShaderMaterial({
       h += U * ridgedF(p) * 0.62;
       // summit crests (breathing) — phase = x*1.3 + z*0.7
       h += crestSeg(p, vec2(-1.5, -1.2), 0.65, 1.4 * 0.58 + sin(uTime * 0.4 + (-1.5*1.3 + -1.2*0.7)) * 0.08);
-      h += crestSeg(p, vec2( 0.0,  0.0), 0.70, 2.15 * 0.58 + sin(uTime * 0.4) * 0.08);
+      h += crestSeg(p, vec2( 0.0,  0.0), 0.88, 2.4 * 0.58 + sin(uTime * 0.4) * 0.08);
       h += crestSeg(p, vec2( 1.5, -1.0), 0.60, 1.3 * 0.58 + sin(uTime * 0.4 + (1.5*1.3 + -1.0*0.7)) * 0.08);
       h += crestSeg(p, vec2(-1.2,  1.4), 0.55, 1.1 * 0.58 + sin(uTime * 0.4 + (-1.2*1.3 + 1.4*0.7)) * 0.08);
       // connecting ridgelines
