@@ -21,6 +21,7 @@
 
 body {
   font-family: 'SF Pro Text', system-ui, sans-serif;
+  font-optical-sizing: auto;
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
@@ -56,11 +57,11 @@ body.dragging {
 @keyframes wordReveal {
   from {
     opacity: 0;
-    transform: translateY(100%) rotate(4deg);
+    transform: translateY(0.4em);
   }
   to {
     opacity: 1;
-    transform: translateY(0) rotate(0deg);
+    transform: translateY(0);
   }
 }
 
@@ -75,7 +76,7 @@ body.dragging {
 }
 
 .name {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1.25rem;
   font-weight: 400;
   letter-spacing: 0.1em;
@@ -86,7 +87,7 @@ body.dragging {
 }
 
 .headline {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1.5rem;
   font-weight: 400;
   line-height: 1.35;
@@ -103,9 +104,8 @@ body.dragging {
 .headline .word {
   display: inline-block;
   opacity: 0;
-  transform: translateY(100%) rotate(4deg);
-  transform-origin: left bottom;
-  animation: wordReveal 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  transform: translateY(0.4em);
+  animation: wordReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .name .word {
@@ -119,6 +119,8 @@ body.dragging {
 .headline em {
   font-style: italic;
   color: var(--accent);
+  /* Splitting.js drops the whitespace text node before the em */
+  margin-left: 0.22em;
 }
 
 #canvas-container {
@@ -188,7 +190,7 @@ canvas {
 
 .peak-label {
   position: absolute;
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1.1rem;
   font-style: italic;
   color: var(--text-primary);
@@ -278,7 +280,7 @@ canvas {
     background: rgba(248, 246, 241, 0.85);
     border: 1px solid rgba(122, 122, 122, 0.2);
     border-radius: 50%;
-    font-family: 'Instrument Serif', Georgia, serif;
+    font-family: 'Literata', Georgia, serif;
     font-size: 1.5rem;
     line-height: 1;
     color: var(--text-muted);
@@ -376,6 +378,11 @@ canvas {
     display: block;
   }
 
+  /* em starts its own centered line here — no leading margin */
+  .headline em {
+    margin-left: 0;
+  }
+
   /* Hide footer on homepage mobile */
   body.home .site-footer {
     display: none;
@@ -426,7 +433,7 @@ canvas {
   background: var(--bg-primary);
   border: 1px solid var(--text-muted);
   border-radius: 4px 0 0 4px;
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 0.95rem;
   font-style: italic;
   color: var(--text-primary);
@@ -488,7 +495,7 @@ canvas {
 }
 
 .info-panel-content p {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1rem;
   line-height: 1.6;
   color: var(--text-primary);
@@ -614,7 +621,7 @@ body.page {
 }
 
 .back-link {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 0.9rem;
   color: var(--text-secondary);
   text-decoration: none;
@@ -647,7 +654,7 @@ body.page {
 }
 
 .page-content h1 {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 2rem;
   font-weight: 400;
   color: var(--text-primary);
@@ -655,7 +662,7 @@ body.page {
 }
 
 .lede {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1.2rem;
   font-style: italic;
   line-height: 1.5;
@@ -807,7 +814,7 @@ body.page {
 }
 
 .inner-name {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1.1rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -869,7 +876,7 @@ body.page {
 .nav-panel-link {
   display: block;
   position: relative;
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1.1rem;
   color: var(--text-secondary);
   text-decoration: none;
@@ -938,7 +945,7 @@ body.page {
 }
 
 .menu-overlay .overlay-link {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: clamp(2.5rem, 8vw, 5rem);
   color: var(--bg-primary);
   text-decoration: none;
@@ -1125,7 +1132,7 @@ body.page {
 }
 
 .work-header h1 {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 2rem;
   font-weight: 400;
   color: var(--text-primary);
@@ -1228,7 +1235,7 @@ body.page {
 }
 
 .row-client {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1.35rem;
   font-weight: 400;
   color: var(--text-primary);
@@ -1253,7 +1260,7 @@ body.page {
 }
 
 .row-description {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1.05rem;
   font-style: italic;
   color: var(--text-secondary);
@@ -1398,7 +1405,7 @@ body.page {
 }
 
 .writing-title {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1.35rem;
   font-weight: 400;
   color: var(--text-primary);
@@ -1406,7 +1413,7 @@ body.page {
 }
 
 .writing-excerpt {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1rem;
   font-style: italic;
   color: var(--text-secondary);
@@ -1495,13 +1502,13 @@ body.page {
 }
 
 .contact-value {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1.15rem;
   color: var(--text-primary);
 }
 
 .contact-note {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1rem;
   font-style: italic;
   color: var(--text-secondary);
@@ -1538,7 +1545,7 @@ body.page {
 }
 
 .explorations-header h1 {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 2rem;
   font-weight: 400;
   color: var(--text-primary);
@@ -1599,7 +1606,7 @@ body.page {
 }
 
 .log-title {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1.15rem;
   color: var(--text-primary);
   display: block;
@@ -1623,44 +1630,40 @@ body.page {
 
 .tool-pill {
   font-family: 'SF Pro Text', system-ui, sans-serif;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
   color: var(--text-muted);
-  background: rgba(0, 0, 0, 0.04);
-  padding: 0.2rem 0.5rem;
-  border-radius: 12px;
   white-space: nowrap;
 }
 
+.tool-pill + .tool-pill::before {
+  content: '·  ';
+  color: var(--text-muted);
+}
+
 .log-status {
-  font-family: 'SF Pro Text', system-ui, sans-serif;
-  font-size: 0.65rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.25rem 0.5rem;
-  border-radius: 3px;
-  min-width: 5rem;
-  text-align: center;
+  font-family: 'Literata', Georgia, serif;
+  font-style: italic;
+  font-size: 0.8rem;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+  text-align: right;
   white-space: nowrap;
 }
 
 .log-status.status-shipped {
-  background: rgba(74, 93, 74, 0.12);
   color: var(--accent);
 }
 
 .log-status.status-prototype {
-  background: rgba(90, 130, 180, 0.12);
-  color: #4a7099;
+  color: var(--text-muted);
 }
 
 .log-status.status-in-progress {
-  background: rgba(184, 149, 107, 0.15);
-  color: #9a7b4f;
+  color: var(--text-muted);
 }
 
 .log-status.status-exploring {
-  background: rgba(122, 122, 122, 0.1);
   color: var(--text-muted);
 }
 
@@ -1824,7 +1827,7 @@ body.page {
 
 .log-table .col-question {
   width: 50%;
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1rem;
   font-style: italic;
   color: var(--text-secondary);
@@ -1957,9 +1960,7 @@ body.page {
   }
 
   .log-status {
-    font-size: 0.55rem;
-    min-width: 4rem;
-    padding: 0.2rem 0.35rem;
+    font-size: 0.72rem;
   }
 }
 
@@ -2187,23 +2188,7 @@ body.page {
   padding: 0 1.5rem;
   border-radius: 6px;
   scroll-margin-top: 200px;
-  opacity: 0;
-  transform: translateY(15px);
-  animation: fadeSlideUp 0.5s cubic-bezier(0.76, 0, 0.24, 1) forwards;
 }
-
-/* Staggered entrance for accordion items */
-.accordion-item:nth-child(1) { animation-delay: 0.25s; }
-.accordion-item:nth-child(2) { animation-delay: 0.3s; }
-.accordion-item:nth-child(3) { animation-delay: 0.35s; }
-.accordion-item:nth-child(4) { animation-delay: 0.4s; }
-.accordion-item:nth-child(5) { animation-delay: 0.45s; }
-.accordion-item:nth-child(6) { animation-delay: 0.5s; }
-.accordion-item:nth-child(7) { animation-delay: 0.55s; }
-.accordion-item:nth-child(8) { animation-delay: 0.6s; }
-.accordion-item:nth-child(9) { animation-delay: 0.65s; }
-.accordion-item:nth-child(10) { animation-delay: 0.7s; }
-.accordion-item:nth-child(11) { animation-delay: 0.75s; }
 
 @keyframes fadeSlideUp {
   to {
@@ -2217,7 +2202,7 @@ body.page {
 }
 
 .accordion-header {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: clamp(2.5rem, 6vw, 3.5rem);
   font-weight: 400;
   color: var(--text-primary);
@@ -2314,7 +2299,7 @@ body.page {
 }
 
 .accordion-description {
-  font-family: 'Instrument Serif', Georgia, serif;
+  font-family: 'Literata', Georgia, serif;
   font-size: 1.05rem;
   font-style: italic;
   color: var(--text-secondary);
@@ -2486,3 +2471,12 @@ body.page {
 .explorations-page .log-entry:nth-child(9) { animation-delay: 0.42s; }
 .explorations-page .log-entry:nth-child(10) { animation-delay: 0.46s; }
 .explorations-page .log-entry:nth-child(11) { animation-delay: 0.50s; }
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+  }
+}
