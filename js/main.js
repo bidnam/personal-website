@@ -119,14 +119,29 @@ for (let i = 0; i < positions.length; i += 3) {
   baseXZ[(i/3)*2 + 1] = positions[i + 2];
 }
 
+// Massif profile: round footprint whose radius wanders around the peak
+// (harmonic spurs, seeded per peak) with a concave alpine falloff —
+// steep at the summit, flaring at the base. Mirrored in GLSL peakH().
 function mountainPeak(x, z, peak, heightOverride) {
   const dx = x - peak.x;
   const dz = z - peak.z;
-  const dist = Math.max(Math.abs(dx), Math.abs(dz));
-  const radius = peak.radius;
-  if (dist > radius) return 0;
-  const h = (heightOverride ?? peak.height) * (1 - dist / radius);
-  return Math.max(0, h);
+  const d = Math.sqrt(dx * dx + dz * dz);
+  if (d > peak.radius * 1.5) return 0;
+  let wander = 1.0;
+  if (d > 1e-4) {
+    const ux = dx / d, uz = dz / d;
+    const seed = peak.x * 3.7 + peak.z * 2.3;
+    const c2 = ux * ux - uz * uz;               // cos 2θ
+    const s2 = 2.0 * ux * uz;                   // sin 2θ
+    const c3 = ux * (ux * ux - 3.0 * uz * uz);  // cos 3θ
+    wander = 1.0
+      + 0.18 * c2 * Math.sin(seed)
+      + 0.16 * s2 * Math.cos(seed * 1.7)
+      + 0.14 * c3 * Math.sin(seed * 2.3);
+  }
+  const t = 1.0 - d / (peak.radius * wander);
+  if (t <= 0) return 0;
+  return Math.max(0, (heightOverride ?? peak.height) * Math.pow(t, 1.45));
 }
 
 // Hover ripple state
@@ -249,8 +264,7 @@ const introStartTime = performance.now();
 let introComplete = false;
 let labelsRevealed = false;
 
-// Compute normals for geometric look
-geometry.computeVertexNormals();
+// Normals unused — the shader derives true face normals per fragment
 
 // ----- The sun -----
 // Anchored to the visitor's local time, clamped to a dawn–dusk band so
@@ -328,12 +342,10 @@ const terrainMaterial = new THREE.ShaderMaterial({
   },
   vertexShader: `
     varying vec3 vPosition;
-    varying vec3 vLocalNormal;
     varying float vHeight;
 
     void main() {
       vPosition = position;
-      vLocalNormal = normal;  // terrain-local space; sun dir arrives in same space
       vHeight = position.y;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
@@ -361,7 +373,6 @@ const terrainMaterial = new THREE.ShaderMaterial({
     uniform float uShadowSteps;
 
     varying vec3 vPosition;
-    varying vec3 vLocalNormal;
     varying float vHeight;
 
     // Hash function for procedural grain
@@ -390,9 +401,24 @@ const terrainMaterial = new THREE.ShaderMaterial({
 
     // ---- Analytic terrain height (mirrors dynamicHeight in JS) ----
     float peakH(vec2 p, vec2 c, float radius, float height) {
-      vec2 d = abs(p - c);
-      float dist = max(d.x, d.y);
-      return max(0.0, height * (1.0 - dist / radius)) * step(dist, radius);
+      vec2 dv = p - c;
+      float d = length(dv);
+      if (d > radius * 1.5) return 0.0;
+      float wander = 1.0;
+      if (d > 1e-4) {
+        vec2 u = dv / d;
+        float seed = c.x * 3.7 + c.y * 2.3;
+        float c2 = u.x * u.x - u.y * u.y;
+        float s2 = 2.0 * u.x * u.y;
+        float c3 = u.x * (u.x * u.x - 3.0 * u.y * u.y);
+        wander = 1.0
+          + 0.18 * c2 * sin(seed)
+          + 0.16 * s2 * cos(seed * 1.7)
+          + 0.14 * c3 * sin(seed * 2.3);
+      }
+      float t = 1.0 - d / (radius * wander);
+      if (t <= 0.0) return 0.0;
+      return max(0.0, height * pow(t, 1.45));
     }
 
     float ridgeH(vec2 p, vec2 a, vec2 b, float h) {
@@ -456,7 +482,7 @@ const terrainMaterial = new THREE.ShaderMaterial({
     float sunShadow(vec3 p, vec3 sunDir) {
       float shadow = 1.0;
       // Dithered march start breaks step banding into imperceptible noise
-      float t = 0.12 + hash(p.xz * 23.7) * 0.16;
+      float t = 0.12 + hash(p.xz * 23.7) * 0.09;
       const int MAX_STEPS = 16;
       for (int i = 0; i < MAX_STEPS; i++) {
         if (float(i) >= uShadowSteps) break;
@@ -472,6 +498,11 @@ const terrainMaterial = new THREE.ShaderMaterial({
     }
 
     void main() {
+      // True face normal from screen-space derivatives — honest flat
+      // shading at any mesh density (terrain-local space)
+      vec3 n = normalize(cross(dFdx(vPosition), dFdy(vPosition)));
+      if (n.y < 0.0) n = -n;
+
       // 4-color elevation gradient
       float t = smoothstep(uMinHeight, uMaxHeight, vHeight);
 
@@ -485,7 +516,7 @@ const terrainMaterial = new THREE.ShaderMaterial({
       }
 
       // Slope tint — steeper faces read slightly rockier
-      float slope = 1.0 - clamp(normalize(vLocalNormal).y, 0.0, 1.0);
+      float slope = 1.0 - clamp(n.y, 0.0, 1.0);
       float rock = smoothstep(0.45, 0.8, slope) * 0.22;
       baseColor = mix(baseColor, vec3(0.42, 0.45, 0.38), rock);
 
@@ -499,7 +530,6 @@ const terrainMaterial = new THREE.ShaderMaterial({
       baseColor = baseColor * (1.0 - grain * 0.06);
 
       // ---- Sunlight: local-space diffuse + raymarched soft shadow ----
-      vec3 n = normalize(vLocalNormal);
       vec3 sunDir = normalize(uSunDir);
       float diffuse = max(dot(n, sunDir), 0.0);
 
@@ -957,7 +987,6 @@ function animate() {
       positions[i + 1] = targetY * eased;
     }
     geometry.attributes.position.needsUpdate = true;
-    geometry.computeVertexNormals();
     terrainMaterial.uniforms.uIntro.value = eased;
 
     // Show labels at 80%
@@ -988,7 +1017,6 @@ function animate() {
       pos[i + 1] = dynamicHeight(x, z, time);
     }
     geometry.attributes.position.needsUpdate = true;
-    geometry.computeVertexNormals();
 
     Object.entries(mainPeaks).forEach(([name, peak]) => {
       peakData[name].actualHeight = dynamicHeight(peak.x, peak.z, time);
