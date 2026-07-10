@@ -62,6 +62,14 @@ Career content lives in a separate repository. Reference these files when buildi
 ### Work Experience Details
 - `/Users/bidnamlee/career-strategy/work-experience/` - 22 markdown files documenting specific consulting engagements across COLLINS, Ogilvy Consulting, R/GA
 
+## Design Direction
+
+Calibrated with Bidnam 2026-07-10 — **treat as current, not permanent; recalibrate if his direction shifts.**
+
+- **Temperament bar**: the balance of "high-altitude calm" and "evening salon" — composed, spacious, assured; warm, literate, host-like. The reference standard is the "Why a terrain?" write-up on the homepage (enthusiasm held with restraint, scholarly without ceremony, quiet conviction). Judge design choices against it.
+- **Restyling goal is de-genericization, not departure** — the temperament was never wrong; the "tasteful-AI" default look is a mass imitation of exactly this register, so the fix is specificity.
+- **Run design rounds as: calibrate sensibility → confirm the reading in a sentence → build one thing.** Bidnam's design feedback is often conceptual orientation, not a build spec. Never map the theme to literal symbols (cartography vocabulary and fog-as-status were both rejected as "theme park"); the theme lives in behavior and feel. When he critiques from a screenshot, reproduce his viewing angle first (`?rot=`/`?sun=` overrides).
+
 ## Design Tokens
 
 ```css
