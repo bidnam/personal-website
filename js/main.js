@@ -978,6 +978,35 @@ function onPeakClick(e) {
 
 document.addEventListener('click', onPeakClick);
 
+// ----- Scroll-instinct cue -----
+// The homepage doesn't scroll. When a visitor tries anyway, point at the
+// doors instead of ignoring the gesture: labels shift to the site's
+// interactive green, the hint brightens, and the light catches the
+// tallest peak. Logged to GA so the instinct is measurable.
+let scrollCueFired = false;
+window.addEventListener('wheel', () => {
+  if (scrollCueFired) return;
+  scrollCueFired = true;
+
+  if (typeof gtag === 'function') {
+    gtag('event', 'scroll_attempt', { event_category: 'engagement' });
+  }
+
+  if (!labelsRevealed) return;
+  document.body.classList.add('scroll-cue');
+  setTimeout(() => document.body.classList.remove('scroll-cue'), 3200);
+
+  // The door demonstrates itself: one light-catch sweep across Work
+  if (!prefersReducedMotion && !hoveredPeak && !isDragging) {
+    const work = peakData.work;
+    terrainMaterial.uniforms.uHoveredPeak.value.set(work.x, work.actualHeight, work.z);
+    terrainMaterial.uniforms.uGlintStart.value = time;
+    setTimeout(() => {
+      if (!hoveredPeak) terrainMaterial.uniforms.uHoveredPeak.value.set(999, 999, 999);
+    }, 1600);
+  }
+}, { passive: true });
+
 let time = prefersReducedMotion ? 3.0 : 0;  // frozen at a good breathing pose
 const idleThreshold = 3000;
 const invQuat = new THREE.Quaternion();

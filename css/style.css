@@ -231,6 +231,21 @@ canvas {
   letter-spacing: 0.04em;
   z-index: 10;
   opacity: 0.6;
+  transition: opacity 0.6s ease, color 0.6s ease;
+}
+
+/* Scroll-instinct cue — first scroll attempt points at the doors */
+body.scroll-cue .hint {
+  opacity: 1;
+  color: var(--text-secondary);
+}
+
+body.scroll-cue .peak-label.visible:not(.active) {
+  color: var(--accent);
+}
+
+body.scroll-cue .peak-line.visible {
+  opacity: 0.9;
 }
 
 /* Show appropriate hint based on device */
