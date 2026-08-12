@@ -32,11 +32,14 @@
     'usage-pilot': 'AI-documentation-pilot.mp4',
     'ai-patterns': 'reusable-ai-patterns.mp4',
     'slide-agent': 'consulting-grade.mp4',
-    'positioning-sim': 'brandpositioningsimulation.mp4'
+    'positioning-sim': 'brandpositioningsimulation.mp4',
+    'basecamp': 'basecamp.mp4',
+    'switchboard': 'switchboard.mp4',
+    'commons': 'commons.mp4'
   };
 
   // Entries that should use smaller preview (tall aspect ratio)
-  const smallPreviewEntries = ['ai-patterns', 'slide-agent', 'positioning-sim'];
+  const smallPreviewEntries = ['ai-patterns', 'slide-agent'];
 
   // Smooth lerp function
   function lerp(start, end, factor) {
